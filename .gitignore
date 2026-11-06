@@ -1,0 +1,18 @@
+# XeLaTeX intermediates; the two PDFs stay, so the example opens without a build
+presentation/build/*
+!presentation/build/main.pdf
+!presentation/build/speaker-notes.pdf
+
+# latexmk and editor leftovers
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.synctex(busy)
+
+# Python caches
+__pycache__/
+
+# operating-system files
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,41 @@
+% !TeX program = xelatex
+% A research talk: title, presenter, date and the section files.
+% Build: see ../README.md (XeLaTeX, three passes).
+\documentclass[aspectratio=169,10pt,t,compress,usepdftitle=false]{beamer}% pdftitle and pdfauthor below
+\usetheme{talk}
+
+% The title, broken at its phrases by \\ where it needs more than one line; the title slide sets up to
+% three lines at 16.5 pt. The short title in brackets is not shown.
+\title[Sharper reconstructions]{Sharper reconstructions\\ with an edge-aware loss}
+% For a talk on a paper, the paper's citation; otherwise a subtitle.
+\subtitle{Author et al., Journal 1, 1 (2026)}
+% For a talk on a paper, its DOI, shown under the subtitle as a link to https://doi.org/<DOI>; leave it
+% empty, \newcommand\paperdoi{}, for no DOI line. 10.1000/182 is the DOI Handbook, a stand-in.
+\newcommand\paperdoi{10.1000/182}
+\author{Your Name}% presenter, shown on the title slide under the subtitle
+\institute{\textbf{Group name}\\ Department\\ Institution}
+\date{Occasion, DD.MM.YYYY}
+
+\hypersetup{pdftitle={Sharper reconstructions with an edge-aware loss},
+  pdfsubject={One sentence on what the talk is about},
+  pdfauthor={Your Name},colorlinks=true,linkcolor=primary,urlcolor=primary}
+
+% The audience PDF hides the notes; speaker-notes.tex sets \notesmode before \input{main}.
+\providecommand\notesmode{hide notes}
+\setbeameroption{\notesmode}
+
+% Drawing helpers of this talk: parts of figures, strips, cards and labels.
+\input{slides/macros}
+
+\begin{document}
+\input{slides/00-title}
+\input{slides/01-problem}
+\input{slides/02-method}
+\input{slides/03-results}
+\input{slides/04-closing}
+\appendix
+% the footer numbers appendix slides A1, A2, ..., as their titles do
+\setcounter{framenumber}{0}
+\renewcommand\insertframenumber{A\arabic{framenumber}}
+\input{slides/05-appendix}
+\end{document}

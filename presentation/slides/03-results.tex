@@ -1,0 +1,52 @@
+\section[Results]{The results}
+\sectionframe{03}{The results}{Does it work?}{\faChartBar}
+
+% ------------------------------------------------------------------ the error
+% One plot per message: the method in the primary colour, the others in grey, the number that matters
+% marked in the accent colour.
+\begin{frame}[source={Author et al.\ (2026), Journal 1, 1, Table 2}]{Error on the test set}
+  \begin{tikzpicture}[x=1mm,y=1mm]
+    \useasboundingbox (0,0) rectangle (144,-54);
+    % axes: 80 mm per unit of error, from 0 at y = -46
+    \draw[greymid,line width=0.5pt] (12,-2) -- (12,-46) -- (96,-46);
+    \foreach \v in {0,0.1,0.2,0.3,0.4,0.5} {
+      \draw[greymid,line width=0.5pt] (12,{-46+80*\v}) -- ++(-1,0);
+      \node[anchor=east,small label] at (10.2,{-46+80*\v}) {\v};}
+    \node[anchor=south,small label,rotate=90] at (2.4,-26) {error};
+    % bars, 12 mm wide: left edge, value, colour, label
+    \foreach \x/\v/\c/\l in {18/0.42/greymid/{$\lambda=0$, baseline},46/0.27/primary/{$\lambda=0.1$},
+        74/0.33/greymid/{$\lambda=1$}} {
+      \fill[\c] (\x,-46) rectangle ++(12,{80*\v});
+      \node[anchor=south,label text] at ({\x+6},{-46+80*\v+0.8}) {\v};
+      \node[anchor=north,small label,text=ink] at ({\x+6},-47.2) {\l};}
+    % the improvement, beside the method's bar
+    \draw[greymid,line width=0.4pt,dash pattern=on 1.2pt off 1pt] (30,{-46+80*0.42}) -- (59.6,{-46+80*0.42});
+    \draw[accent,line width=0.6pt] (59.6,{-46+80*0.42}) -- ++(1.6,0) -- (61.2,{-46+80*0.27}) -- ++(-1.6,0);
+    \node[anchor=west,label text,text=accent,font=\footnotesize\bfseries] at (62.4,{-46+80*0.345}) {−36\,\%};
+    \node[anchor=north west,small label,text width=40mm] at (102,-6)
+      {mean absolute error over the test images; lower is better};
+  \end{tikzpicture}
+  \note{\textbf{6:10--7:10}\par
+    The mean absolute error on the test images, lower is better.\par
+    With a weight of 0.1 the error falls from 0.42 to 0.27, by about a third.\par
+    A weight of 1 is worse than 0.1: the halos of the previous slide cost pixel error.\par
+    These are example values; put your own results and their spread here.}
+\end{frame}
+
+% ------------------------------------------------------- the case, revisited
+% The failure case of section 1 returns, now with the method's output beside it.
+\begin{frame}[source={Author et al.\ (2026), Journal 1, 1, Fig.\ 2}]{Baseline against method}
+  \begin{tikzpicture}[x=1mm,y=1mm]
+    \useasboundingbox (0,0) rectangle (144,-54);
+    \foreach \k/\p/\l in {0/0/input,1/1000/baseline,2/2000/{method, $\lambda=0.1$}} {
+      \figpart{16+\k*39}{0}{assets/example-figure}{4000}{\p}{0}{\p+1000}{1000}{34}
+      \node[small label,anchor=north] at ({33+\k*39},-35.2) {\l};}
+    \goodstrip{-40.6}{the thin bar and the shared edge stay sharp}
+    \warnstrip{-48.4}{one dataset and one training run so far}
+  \end{tikzpicture}
+  \note{\textbf{7:10--8:10}\par
+    The case from the beginning, with the method's output on the right.\par
+    The thin bar and the edge between the two squares stay sharp.\par
+    The evidence is one dataset and one training run; the spread over several runs is the next
+      check.}
+\end{frame}

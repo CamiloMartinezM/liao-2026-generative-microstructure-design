@@ -1,0 +1,51 @@
+% Appendix: its own sections, so the mini-frame headline shows only these. Titles carry the number that
+% the footer shows, A1, A2, ...
+\section[Backup]{Backup}
+
+% ------------------------------------------------------------- the loss in full
+\begin{frame}[source={Author et al.\ (2026), Journal 1, 1, Eqs.\ 1--3 · Other and Author (2020), Conference}]
+  {A1\enspace The loss in full}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \small
+      {\scriptsize\color{grey}data term (Eq.\ 1)}
+      \[ L_{\mathrm{data}}=\frac{1}{n}\sum_{i=1}^{n}|x_i-\hat{x}_i| \]
+      {\scriptsize\color{grey}edge term with the Sobel kernels (Eqs.\ 2, 3)}
+      \[ S_x=\left[\begin{array}{rrr}-1&0&1\\-2&0&2\\-1&0&1\end{array}\right],\;\;
+         S_y=S_x^{\top} \]
+      \[ L_{\mathrm{edge}}=\frac{1}{n}\sum_{i=1}^{n}\big(|S_x\ast(x-\hat{x})|_i+|S_y\ast(x-\hat{x})|_i\big) \]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
+      {\scriptsize\color{grey}the loss (Eq.\ 3)}
+      \[ L=L_{\mathrm{data}}+\lambda\,L_{\mathrm{edge}},\qquad \lambda=0.1 \]
+      {\scriptsize\color{grey}on a flat area of both images the gradients vanish, and only $L_{\mathrm{data}}$ acts}
+      \[ (S_x\ast x)_i=(S_y\ast x)_i=0 \]
+    \end{column}
+  \end{columns}
+  \note{\textbf{If asked}\par
+    The edge term compares Sobel gradients across and down; on flat areas both are zero, so the term
+      acts only along edges.\par
+    The weight 0.1 was the best of five values on the validation set.}
+\end{frame}
+
+\section[References]{References}
+
+% ------------------------------------------------------------------ references
+\begin{frame}{A2\enspace References}
+  \begin{columns}[T,onlytextwidth]
+  \begin{column}{0.48\textwidth}
+  \scriptsize\setlength\parskip{0.6mm}\raggedright
+  \textbf{The paper}\par
+  A.~Author, B.~Author, C.~Author (2026). \emph{Title of the paper}. Journal 1, 1--10.
+  \url{https://doi.org/10.1000/182}.\par
+  A.~Author (2026). \emph{code repository}, commit and licence, read on DD~Month~YYYY.\par
+  \end{column}
+  \begin{column}{0.48\textwidth}
+  \scriptsize\setlength\parskip{0.6mm}\raggedright
+  \textbf{Methods}\par
+  D.~Other, A.~Author (2020). \emph{Title of the method's paper}. Proceedings of the Conference,
+  100--110.\par
+  \end{column}
+  \end{columns}
+\end{frame}

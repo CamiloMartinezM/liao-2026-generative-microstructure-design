@@ -1,0 +1,29 @@
+\section[Problem]{The problem}
+\sectionframe{01}{The problem}{Why does the baseline lose detail?}{\faSearch}
+
+% -------------------------------------------------------------- failure case
+% One concrete failure case, shown large, with numbered markers that also number the explanation.
+\begin{frame}[source={Author et al.\ (2026), Journal 1, 1, Fig.\ 2a, b}]{Where the baseline fails}
+  \begin{tikzpicture}[x=1mm,y=1mm]
+    \useasboundingbox (0,0) rectangle (144,-54);
+    % panels a and b of the example figure, 49 mm each
+    \figpart{0}{0}{assets/example-figure}{4000}{0}{0}{1000}{1000}{49}
+    \node[small label,anchor=north] at (24.5,-50.2) {input};
+    \figpart{54}{0}{assets/example-figure}{4000}{1000}{0}{2000}{1000}{49}
+    \node[small label,anchor=north] at (78.5,-50.2) {baseline output};
+    % markers on the output, beside the thin bar and above the shared edge of the two squares
+    \node[number mark] at ({\fpx{1300}},{\fpy{622}}) {1};
+    \node[number mark] at ({\fpx{1760}},{\fpy{398}}) {2};
+    % the explanation, numbered like the markers
+    \node[anchor=north west,label text,text width=36mm] at (108,-14)
+      {\markeditem{1}{thin bar fades}\markeditem{2}{colours mix along the edge}};
+    \node[anchor=north west,small label,text width=36mm] at (108,-34)
+      {the loss averages over all pixels; edges are few pixels};
+  \end{tikzpicture}
+  \note{\textbf{1:00--2:00}\par
+    Left, an input image; right, the baseline's output for it.\par
+    The thin bar fades (marker 1), and the two squares bleed into each other along their shared edge
+      (marker 2).\par
+    The baseline is trained with a per-pixel loss, which averages over all pixels; edges are few pixels,
+      so missing them costs little.}
+\end{frame}

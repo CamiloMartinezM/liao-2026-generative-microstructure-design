@@ -1,0 +1,382 @@
+% Research-talk theme for Beamer (XeLaTeX or LuaLaTeX).
+% Four colours, each with one meaning, and their tints; text in Latin Modern Sans, the OpenType Computer
+% Modern Sans; code in FiraCode Nerd Font Mono when it is installed. Navigation is a mini-frame headline
+% (the sections in one row, a dot per frame below each name); the footer shows the group's logo, the
+% frame's citation and the frame number. Load with \usetheme{talk} and the class option compress.
+% Credits: the plain square blocks, the logo in the footer and the section dividers (a centred box over a
+% band) follow "TU Delft presentation" by Novanext (Overleaf template, CC BY 4.0,
+% https://www.overleaf.com/latex/templates/tu-delft-presentation/jcxrmnxssdst); the mini-frame headline
+% follows Beamer's Frankfurt theme. See THIRD-PARTY-NOTICES.md.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{beamerthemetalk}[2026/11/05 research talk theme]
+
+\RequirePackage{fontspec}
+\RequirePackage{etoolbox}
+\RequirePackage{tikz}
+\usetikzlibrary{arrows.meta,calc,decorations.pathmorphing}
+\RequirePackage[most]{tcolorbox}
+\RequirePackage{listings}
+\RequirePackage{fontawesome5}
+\RequirePackage{booktabs,tabularx,array,colortbl}
+\renewcommand\tabularxcolumn[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+% ---------------------------------------------------------------- colours
+% Put your institution's palette into the RGB values and keep the names, which say what each colour
+% means on the slides:
+%   primary  the subject (the method, the model, the tool), titles and structure
+%   accent   what to look at: a decision, a problem, a warning, numbered markers
+%   ink      body text, and fixed inputs such as data and files
+%   good     what works: a passed check, an improved result
+%   greys    secondary text, baselines, unchanged parts, rules and guides
+\definecolor{primary}{RGB}{31,78,121}
+\definecolor{ink}{RGB}{24,36,51}
+\definecolor{accent}{RGB}{190,48,60}
+\definecolor{good}{RGB}{28,128,82}
+\definecolor{grey}{RGB}{110,110,110}
+\definecolor{greymid}{RGB}{145,145,145}
+\definecolor{greylight}{RGB}{190,190,190}
+\definecolor{greypale}{RGB}{230,230,230}
+\colorlet{primarytint}{primary!8}
+\colorlet{accenttint}{accent!8}
+\colorlet{goodtint}{good!9}
+\colorlet{inktint}{greypale!55}
+
+% ------------------------------------------------------------------ fonts
+% Sans: fontspec's default Latin Modern Sans, with optical sizes. Mono: FiraCode Nerd Font Mono
+% (https://www.nerdfonts.com) without its code ligatures, so `->` and `!=` print as typed; Latin Modern
+% Mono when FiraCode is not installed.
+\IfFontExistsTF{FiraCode Nerd Font Mono}
+  {\setmonofont{FiraCode Nerd Font Mono}[Scale=0.86,Contextuals=NoAlternate]}
+  {\setmonofont{Latin Modern Mono}}
+
+\setbeamercolor{normal text}{fg=ink,bg=white}
+\setbeamercolor{structure}{fg=primary}
+\setbeamercolor{alerted text}{fg=accent}
+\setbeamercolor{frametitle}{fg=primary}
+\setbeamercolor{framesubtitle}{fg=grey}
+\setbeamerfont{frametitle}{size=\fontsize{16.5}{19}\selectfont,series=\bfseries}
+\setbeamerfont{framesubtitle}{size=\fontsize{9}{11}\selectfont,series=\mdseries}
+\setbeamertemplate{navigation symbols}{}
+\setbeamersize{text margin left=8mm,text margin right=8mm}
+
+% ------------------------------------------------------------------ logos
+% Both are placeholders in assets/: replace the files, or point these macros at yours. The paths have no
+% extension, so graphicx takes the first of .pdf, .png and .jpg that exists.
+\newcommand\institutionlogo{assets/logo-institution}
+\newcommand\grouplogo{assets/logo-group}
+
+% ------------------------------------------------------ mini-frame headline
+% Section names in one row, one circle per frame below each name; the current frame is filled. The
+% mechanism is beamer's \insertnavigation in compressed mode, as in the smoothbars outer theme.
+\beamer@compresstrue
+\setbeamercolor{section in head/foot}{fg=white,bg=primary}
+\setbeamerfont{section in head/foot}{size=\fontsize{6.8}{8}\selectfont}
+\setbeamertemplate{section in head/foot}{\textcolor{white}{\insertsectionhead}}% explicit: links are coloured
+\setbeamertemplate{section in head/foot shaded}%
+  {\textcolor{white!55!primary}{\insertsectionhead}}
+\setbeamercolor{mini frame}{fg=white}
+\setbeamersize{mini frame size=1.6mm,mini frame offset=0.35mm}
+\def\talk@dot#1{\beamer@xelatex@fixminiframes
+  \begin{pgfpicture}{0pt}{0pt}{1.2mm}{1.2mm}
+    \pgfsetlinewidth{0.45pt}
+    \pgfpathcircle{\pgfpoint{0.6mm}{0.6mm}}{0.47mm}
+    \pgfusepath{#1}
+  \end{pgfpicture}}
+\setbeamertemplate{mini frame}{\talk@dot{fill,stroke}}
+\setbeamertemplate{mini frame in current subsection}{\talk@dot{stroke}}
+\setbeamertemplate{mini frame in other subsection}{\talk@dot{stroke}}
+\setbeamertemplate{mini frame in other section}%
+  {\color{white!45!primary}\talk@dot{stroke}}
+\setbeamertemplate{headline}{%
+  \begin{beamercolorbox}[wd=\paperwidth,ht=4.4mm,dp=3.8mm]{section in head/foot}%
+    \hbox to\paperwidth{\hskip5mm\insertnavigation{\dimexpr\paperwidth-10mm\relax}\hss}%
+  \end{beamercolorbox}%
+}
+
+% ------------------------------------------------------ per-frame citation
+% Frame option source={...}: the frame's citation, printed in the footer.
+\let\talk@framesource\@empty
+\define@key{beamerframe}{source}{\def\talk@framesource{#1}}
+% Beamer processes frame options outside the frame's group: reset them.
+\BeforeBeginEnvironment{frame}{\let\talk@framesource\@empty}
+% Columns otherwise start with a full empty \baselineskip below the title.
+\BeforeBeginEnvironment{columns}{\par\nointerlineskip}
+% [T] columns: beamer lifts a column's first item by 1ex, and only boxes such as blocks undo it; start
+% every column at its top edge so text, images and blocks begin at the same height. Re-arming the
+% minipage flag, as a fresh minipage does, also drops a list's top space there.
+\define@key{beamer@col}{T}[true]{\def\beamer@colmode{T}\def\beamer@colalign{t}%
+  \def\beamer@colheadskip{\par\nointerlineskip\@minipagetrue\everypar{\@minipagefalse\everypar{}}}}
+% Beamer opens each frame body with an empty box and, except on plain frames, lets a first line of text
+% take full line spacing below it; drop that space on every frame.
+\patchcmd{\beamer@frameslide}{\ifbeamer@plainframe\nointerlineskip\fi}{\nointerlineskip}{}%
+  {\PackageWarning{beamerthemetalk}{Could not patch the start of the frame body}}
+
+% ------------------------------------------------------------- frame title
+% The phantom gives every title line the same depth, with or without descenders, so the content starts
+% at the same distance below every title.
+\def\talk@titledepth{\vphantom{gjpqy}}
+\setbeamertemplate{frametitle}{%
+  \nointerlineskip\vskip3.6mm
+  \begin{beamercolorbox}[wd=\paperwidth,leftskip=8mm,rightskip=8mm plus 1fil]{frametitle}%
+    \usebeamerfont{frametitle}\insertframetitle\talk@titledepth\par
+    \ifx\insertframesubtitle\@empty\else
+      \vskip0.8mm{\usebeamerfont{framesubtitle}\usebeamercolor[fg]{framesubtitle}%
+        \insertframesubtitle\talk@titledepth\par}%
+    \fi
+  \end{beamercolorbox}%
+}
+
+% ------------------------------------------------------------------ footer
+% The group's logo bottom left, then the frame's citation, and the frame number alone bottom right, all
+% centred on the logo's height. The logo stays within the footer's 6 mm, so the slide area keeps its
+% height.
+\setbeamercolor{footline}{fg=grey}
+\setbeamerfont{footline}{size=\fontsize{6.2}{7}\selectfont}
+% The citation keeps each work, between the separators " · " of the frame's source, on one line, so
+% that a citation of two lines breaks only between works.
+\def\talk@endmark{\talk@endmark}
+\def\talk@works#1{\let\talk@sep\@empty\talk@work#1 · \talk@endmark{} · }
+\def\talk@work#1 · {\ifx\talk@endmark#1\else
+  \talk@sep\mbox{#1}\def\talk@sep{\nobreakspace·\space}\expandafter\talk@work\fi}
+\setbeamertemplate{footline}{%
+  \vbox to 9mm{\vfill
+    \hbox to\paperwidth{\hskip8mm
+      $\vcenter{\hbox{\includegraphics[height=5.8mm]{\grouplogo}}}$\hskip4mm
+      \ifx\talk@framesource\@empty\else
+        \parbox[c]{108mm}{\fontsize{5.8}{6.8}\selectfont\color{grey}\raggedright
+          \expandafter\talk@works\expandafter{\talk@framesource}}%
+      \fi\hfill
+      \ifbeamer@noframenumbering\else
+        $\vcenter{\hbox{\usebeamerfont{footline}\color{primary}\bfseries\insertframenumber}}$%
+      \fi
+      \hskip8mm}%
+    \vskip3mm}%
+}
+
+% ----------------------------------------------------------- speaker notes
+% Each note starts with its time in bold, then one point per line, so a glance finds the next one.
+\AtBeginNote{\parindent=0pt\parskip=1.1mm\raggedright}
+
+% ------------------------------------------------------------------- links
+% \slidelink{url}{text}: a link in the slides; in the speaker notes, whose thumbnails scale a slide but
+% not its links, the same text without a link. Use it for links on slides that have notes.
+% \notesmode is set by main.tex or speaker-notes.tex.
+\newcommand\talk@audiencemode{hide notes}
+\newcommand\slidelink[2]{\ifx\notesmode\talk@audiencemode\href{#1}{#2}\else\textcolor{primary}{#2}\fi}
+
+% ------------------------------------------------------------------- lists
+\setbeamertemplate{itemize item}{\raisebox{0.32ex}{\color{primary}\rule{1.05mm}{1.05mm}}}
+\setbeamertemplate{itemize subitem}{\raisebox{0.4ex}{\color{primary!70}\rule{0.8mm}{0.8mm}}}
+\setbeamertemplate{enumerate item}{\color{primary}\bfseries\insertenumlabel.}
+\setbeamertemplate{enumerate subitem}{\color{primary}\insertsubenumlabel)}
+\setlength{\leftmargini}{4mm}
+\setlength{\leftmarginii}{3.5mm}
+
+% -------------------------------------------- blocks (square, tinted body)
+\setbeamertemplate{blocks}[default]
+\setbeamercolor{block title}{fg=white,bg=primary}
+\setbeamercolor{block body}{fg=ink,bg=primarytint}
+\setbeamerfont{block title}{size=\small,series=\bfseries}
+\setbeamerfont{block body}{size=\small}
+
+\tcbset{talk/.style={enhanced,sharp corners,boxrule=0pt,frame hidden,
+    left=1.8mm,right=1.8mm,top=1.3mm,bottom=1.5mm,toptitle=0.7mm,bottomtitle=0.7mm,
+    fonttitle=\small\bfseries,fontupper=\small,coltext=ink,
+    before upper=\raggedright,before title=\raggedright,
+    before skip=0pt,after skip=2mm}}
+% \begin{infoblock}{title}: primary, information; warnblock: accent, decisions and warnings;
+% datablock: ink, files and data; goodblock: good, what works; panel: untitled.
+\newtcolorbox{infoblock}[2][]{talk,colback=primarytint,colbacktitle=primary,coltitle=white,title={#2},#1}
+\newtcolorbox{warnblock}[2][]{talk,colback=accenttint,colbacktitle=accent,coltitle=white,title={#2},#1}
+\newtcolorbox{datablock}[2][]{talk,colback=inktint,colbacktitle=ink,coltitle=white,title={#2},#1}
+\newtcolorbox{goodblock}[2][]{talk,colback=goodtint,colbacktitle=good,coltitle=white,title={#2},#1}
+\newtcolorbox{panel}[1][]{talk,colback=inktint,#1}
+
+% -------------------------------------------------------------------- code
+\lstdefinestyle{talk}{basicstyle=\ttfamily\fontsize{7.6}{9.3}\selectfont,
+  columns=fullflexible,keepspaces=true,showstringspaces=false,upquote=true,
+  aboveskip=0pt,belowskip=0pt,frame=none,tabsize=4,escapechar=§}
+\lstdefinelanguage{md}{morecomment=[l][\color{primary}\bfseries]{\#},
+  moredelim=[s][\color{accent!80!black}]{`}{`},sensitive=true}
+\lstdefinestyle{py}{style=talk,language=Python,
+  keywordstyle=\color{primary}\bfseries,commentstyle=\color{grey},
+  stringstyle=\color{accent!80!black}}
+% Shell, TOML, YAML and .gitignore: '#' comments in grey, double-quoted strings.
+\lstdefinelanguage{sh}{morecomment=[l]{\#},morestring=[b]",sensitive=true}
+\lstdefinestyle{sh}{style=talk,language=sh,commentstyle=\color{grey},
+  stringstyle=\color{accent!80!black}}
+\lstset{style=talk}
+% A file shown as in an editor: a white tab with an icon and the file's path in the top-left corner, a
+% grey tab bar beside it, and a white page below. The title background is white and the grey bar is
+% drawn only right of the tab; the border is a line, not a filled frame behind the page, so no grey can
+% show between tab and page.
+\newcommand\talk@filetab[1]{%
+  \tikz[baseline=(t.south)]{\node[inner xsep=1.8mm,inner ysep=0.8mm,text height=1.9mm,
+      text depth=0.6mm,font=\ttfamily\fontsize{7}{8}\selectfont,text=ink,
+      path picture={\draw[primary,line width=0.9pt] (path picture bounding box.north west)
+        -- (path picture bounding box.north east);}] (t)
+      {\textcolor{primary}{\faIcon[regular]{file-alt}}\enspace#1};
+    % the bar runs to the box's right edge; clip title rounds its corner
+    \fill[inktint,overlay] (t.south east) rectangle ([xshift=\linewidth]t.north west);}}
+\tcbset{talkfile/.style={enhanced,arc=1.2mm,boxrule=0.5pt,frame hidden,
+    borderline={0.5pt}{0.25pt}{greylight},colback=white,
+    colbacktitle=white,coltext=ink,titlerule=0pt,boxsep=0pt,
+    left=2.8mm,right=2.8mm,top=2.2mm,bottom=2.2mm,before skip=0pt,after skip=2mm,
+    % after left and right, which also set the title's side space; tab and bar fill the title,
+    % clipped to the box's rounded corners
+    lefttitle=0pt,righttitle=0pt,toptitle=0pt,bottomtitle=0pt,clip title}}
+% \begin{codefile}[listing options]{path} ... \end{codefile}: Markdown by default; [style=sh] for shell,
+% TOML, YAML and .gitignore, [style=py] for Python.
+\newtcblisting{codefile}[2][]{talkfile,listing only,title={\talk@filetab{#2}},
+  listing options={style=talk,language=md,#1}}
+% A terminal window: dark, rounded, with three dots and a centred title. Prompts ($) are green and
+% comments grey; output keeps the text colour, or § escapes colour it.
+\definecolor{termbg}{RGB}{12,12,12}
+\definecolor{termfg}{RGB}{226,226,226}
+\definecolor{termdim}{RGB}{150,150,150}
+\definecolor{termgreen}{RGB}{110,200,120}
+\definecolor{termred}{RGB}{255,110,115}
+\definecolor{termorange}{RGB}{232,160,105}
+\definecolor{termblue}{RGB}{120,175,235}
+\definecolor{termdot1}{RGB}{255,95,87}
+\definecolor{termdot2}{RGB}{254,188,46}
+\definecolor{termdot3}{RGB}{40,200,64}
+\lstdefinestyle{term}{style=sh,commentstyle=\color{termdim},stringstyle=\color{termorange},
+  literate={\$}{{\textcolor{termgreen}{\$}}}1}
+\tcbset{talkterm/.style={enhanced,arc=1.2mm,boxrule=0pt,frame hidden,colback=termbg,
+    colbacktitle=termbg,coltitle=termdim,coltext=termfg,fonttitle=\ttfamily\fontsize{7}{8}\selectfont,
+    halign title=center,toptitle=1.2mm,bottomtitle=0.2mm,titlerule=0pt,
+    left=2.2mm,right=2.2mm,top=1.2mm,bottom=1.6mm,before skip=0pt,after skip=2mm,
+    overlay={\foreach \c [count=\i] in {termdot1,termdot2,termdot3}
+      \fill[\c] ([xshift=\i*2.3mm-0.3mm]title.west) circle (0.7mm);}}}
+% \begin{terminal}[listing options]{title} ... \end{terminal}: commands and their output;
+% \begin{terminalwindow}{title} ... \end{terminalwindow}: the same frame around a screenshot.
+\newtcblisting{terminal}[2][]{talkterm,listing only,title={#2},listing options={style=term,#1}}
+\newtcolorbox{terminalwindow}[2][]{talkterm,title={#2},#1}
+% A folder tree on a white page with the file window's border: folder and file icons, names in mono,
+% guides from each row to its parent, and notes and badges in their own columns (x in mm from the
+% page's inner left edge).
+%   \begin{foldertree}[note at=29,badge at=56,row height=4]
+%     \tdir{0}{project/}{}  \tfile{1}{README.md}{what the project is}  ...
+%   \end{foldertree}
+% Depth 0 is a root. \tbadge{<tikz style>}{text} badges the last row; \tstrike strikes its name.
+\newcounter{talk@trow}
+\pgfkeys{/talktree/.cd,note at/.store in=\talk@tnotex,badge at/.store in=\talk@tbadgex,
+  row height/.store in=\talk@trowh,note at=30,badge at=56,row height=4.2}
+\def\talk@tindent{3.4}% mm per level
+\newtcolorbox{talk@treebox}{enhanced,arc=1.2mm,boxrule=0.5pt,frame hidden,
+  borderline={0.5pt}{0.25pt}{greylight},colback=white,coltext=ink,boxsep=0pt,
+  left=2.4mm,right=2.4mm,top=2mm,bottom=2mm,before skip=0pt,after skip=2mm}
+\newenvironment{foldertree}[1][]
+  {\pgfkeys{/talktree/.cd,#1}\setcounter{talk@trow}{0}\talk@tclear{-1}%
+   \begin{talk@treebox}\begin{tikzpicture}[x=1mm,y=1mm]}
+  {\end{tikzpicture}\end{talk@treebox}}
+% forget the last rows below depth #1, so the next row at a deeper level starts a new branch
+\newcommand\talk@tclear[1]{\count@=#1\relax
+  \loop\ifnum\count@<8 \advance\count@ by 1
+    \expandafter\global\expandafter\let\csname talk@tlast\the\count@\endcsname\relax\repeat}
+% #1 depth, #2 icon, #3 name, #4 note
+\newcommand\talk@trow[4]{%
+  \stepcounter{talk@trow}%
+  \pgfmathsetmacro\talk@ty{-(\value{talk@trow}-1)*\talk@trowh}%
+  \pgfmathsetmacro\talk@tix{#1*\talk@tindent+1.4}%
+  \ifnum#1>0
+    % the guide runs under the parent's icon: from its previous sibling, or from below the parent
+    \pgfmathsetmacro\talk@tgx{(#1-1)*\talk@tindent+1.4}%
+    \expandafter\ifx\csname talk@tlast\number#1\endcsname\relax
+      \pgfmathsetmacro\talk@tya{\csname talk@tlast\number\numexpr#1-1\relax\endcsname-1.5}%
+    \else
+      \edef\talk@tya{\csname talk@tlast\number#1\endcsname}%
+    \fi
+    \draw[greylight,line width=0.5pt] (\talk@tgx,\talk@tya) -- (\talk@tgx,\talk@ty) -- (\talk@tix-1.2,\talk@ty);
+  \fi
+  \expandafter\xdef\csname talk@tlast\number#1\endcsname{\talk@ty}%
+  \talk@tclear{#1}%
+  \node[inner sep=0pt,font=\scriptsize] at (\talk@tix,\talk@ty) {#2};
+  \node[anchor=west,inner sep=0pt,font=\ttfamily\fontsize{7.2}{8}\selectfont,text=ink] (tname)
+    at (\talk@tix+1.9,\talk@ty) {#3};
+  \ifx\relax#4\relax\else
+    \node[anchor=west,inner sep=0pt,font=\scriptsize,text=grey] at (\talk@tnotex,\talk@ty) {#4};
+  \fi}
+\newcommand\tdir[3]{\talk@trow{#1}{\textcolor{primary}{\faFolderOpen}}{#2}{#3}}
+\newcommand\tfile[3]{\talk@trow{#1}{\textcolor{greymid}{\faIcon[regular]{file-alt}}}{#2}{#3}}
+% Rows that stand for parts left as they were, in grey.
+\newcommand\tdirgrey[3]{\talk@trow{#1}{\textcolor{greylight}{\faFolderOpen}}{\textcolor{greymid}{#2}}{#3}}
+\newcommand\tfilegrey[3]{\talk@trow{#1}{\textcolor{greylight}{\faIcon[regular]{file-alt}}}%
+  {\textcolor{greymid}{#2}}{#3}}
+% The same rows inside another tikzpicture[x=1mm,y=1mm], so that arrows can join a tree to other
+% drawings: \treestart{note at=..,row height=..} starts a tree whose first row is at y = 0 of the
+% current scope, and x = 0 is the page's inner left edge of a foldertree. Draw the page yourself.
+\newcommand\treestart[1]{\pgfkeys{/talktree/.cd,#1}\setcounter{talk@trow}{0}\talk@tclear{-1}}
+\newcommand\tbadge[2]{\node[anchor=west,inner xsep=1mm,inner ysep=0.45mm,
+  font=\fontsize{7}{8}\selectfont\bfseries,#1] at (\talk@tbadgex,\talk@ty) {#2};}
+\newcommand\tstrike{\draw[accent,line width=0.6pt] (tname.west) -- (tname.east);}
+
+% ----------------------------------------------------------------- helpers
+\newcommand\fn[1]{\texttt{#1}}
+% Author followed by a gap, or nothing when \author{} is empty.
+\newcommand\authorandgap{\ifx\beamer@shortauthor\@empty\else\insertauthor\quad\fi}
+
+% ------------------------------------------------------------- TikZ styles
+% Colour carries meaning, but every node is also labelled in words.
+\tikzset{
+  every picture/.append style={line cap=butt},
+  box/.style={draw=greylight,line width=0.5pt,fill=white,inner sep=1.2mm,
+    font=\footnotesize,text=ink,align=center},
+  primary box/.style={box,draw=primary,fill=primarytint},
+  accent box/.style={box,draw=accent,fill=accenttint},
+  data box/.style={box,draw=ink,fill=inktint,font=\ttfamily\scriptsize},
+  flow/.style={-{Stealth[length=1.7mm,width=1.3mm]},line width=0.6pt,draw=ink},
+  lbl/.style={font=\scriptsize,text=grey,inner sep=0.6mm},
+  % a numbered marker on an image: \node[number mark] at (x,y) {1};
+  number mark/.style={circle,fill=accent,text=white,font=\scriptsize\bfseries,inner sep=0pt,
+    minimum size=4mm},
+}
+% The same marker in a line of text, for example as the label of the item it numbers: \item[\numbermark{1}]
+% or \numbermark{1} in a table cell. Its digit sits on the baseline of the text around it; anchor=base also
+% overrides the anchor that a picture inherits from a node it is set in.
+\newcommand\numbermark[1]{\tikz[baseline=(nm.base)]\node[number mark,anchor=base] (nm) {#1};}
+
+% --------------------------------------------------------- section divider
+% Stylised lines for the divider band: #1 random seed, #2 left edge and #3 top in mm, #4 number of lines.
+\newcommand\talk@bandlines[4]{%
+  \pgfmathsetseed{#1}%
+  \foreach \talk@r in {1,...,#4}{%
+    \pgfmathrandominteger{\talk@ind}{0}{3}%
+    \pgfmathrandominteger{\talk@n}{0}{5}%
+    \pgfmathsetmacro\talk@y{#3-(\talk@r-1)*3.6}%
+    \pgfmathsetmacro\talk@x{#2+4*\talk@ind}%
+    \xdef\talk@xs{\talk@x}%
+    \ifnum\talk@n>0
+      \foreach \talk@s in {1,...,\talk@n}{%
+        \pgfmathsetmacro\talk@w{3+11*rnd}%
+        \fill[primary!20] (\talk@xs,\talk@y) rectangle ++(\talk@w,-1.2);%
+        \pgfmathsetmacro\talk@t{\talk@xs+\talk@w+1.5}%
+        \xdef\talk@xs{\talk@t}%
+      }%
+    \fi
+  }}
+% \sectionframe{number}{title}{guiding question}{icon}: a centred box over a 160 x 52 mm band of lines;
+% the mini-frame headline stays visible. The icon is a fontawesome5 command such as \faSearch.
+\newcommand\sectionframe[4]{%
+  \begin{frame}[noframenumbering]
+  \begin{tikzpicture}[remember picture,overlay]
+    \fill[primarytint] ([yshift=-8.2mm]current page.north west)
+      rectangle ([yshift=-60.2mm]current page.north east);
+    \begin{scope}[shift={([yshift=-8.2mm]current page.north west)},x=1mm,y=1mm]
+      \talk@bandlines{\number#1}{8}{-4}{13}
+      \talk@bandlines{1#1}{84}{-4}{13}
+    \end{scope}
+    \node[fill=primary,text=white,text width=90mm,align=center,inner xsep=6mm,
+      inner ysep=4.5mm,anchor=center,execute at begin node={\hyphenpenalty=10000}]
+      (box) at ([yshift=-58mm]current page.north) {%
+      {\fontsize{13}{15}\selectfont #4}\enspace{\fontsize{11}{13}\selectfont #1}\par\vskip1.4mm
+      {\color{white!70!primary}\rule{12mm}{0.6pt}}\par\vskip1.8mm
+      {\fontsize{17}{20}\selectfont\bfseries #2}\par\vskip2mm
+      {\fontsize{8.6}{11}\selectfont\color{white!88!primary}#3}};
+    \fill[accent] (box.north east) rectangle ([xshift=1.6mm]box.south east);
+  \end{tikzpicture}
+  \end{frame}}
+
+\endinput

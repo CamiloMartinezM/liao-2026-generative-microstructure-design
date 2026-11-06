@@ -1,0 +1,8 @@
+# LF line endings in every checkout, Windows included; the build scripts run on both
+* text=auto eol=lf
+*.ps1 text eol=lf
+*.sh text eol=lf
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary

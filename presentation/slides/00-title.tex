@@ -1,0 +1,67 @@
+% \titlepanel: the right of the title slide, which the closing slide repeats: a panel in the primary colour
+% with a simplified key figure, here the example's input above a bar chart of the result, and an accent
+% edge on its left. Inside a full-page tikzpicture[x=1mm,y=1mm] whose origin is the page's top-left
+% corner, y downwards negative; the panel bleeds 1 mm past the edges. Replace the drawing with your own.
+\newcommand\titlepanel{%
+  \fill[primary] (102,1) rectangle (161,-91);
+  \figpart{113.5}{-11}{assets/example-figure}{4000}{0}{0}{1000}{1000}{36}
+  \draw[white,line width=0.6pt] (fp nw) rectangle (fp se);
+  \draw[white,line width=0.9pt,-{Stealth[length=2mm,width=1.6mm]}] (131.5,-50.5) -- (131.5,-57);
+  % the result, 36 x 22 mm: the baseline's error, light, against the method's, white
+  \begin{scope}[shift={(113.5,-83)}]
+    \fill[white!45!primary] (7,0) rectangle (15,18.5);
+    \fill[white] (21,0) rectangle (29,11.9);
+    \draw[white,line width=0.7pt] (0,22) -- (0,0) -- (36,0);
+  \end{scope}
+  \fill[accent] (102,1) rectangle (103.6,-91);}
+
+% ------------------------------------------------------------------- title
+\begin{frame}[plain,noframenumbering]
+% Drawn inside the frame rather than over the page, so the speaker notes' thumbnail shows it too. The
+% picture's origin is the page's top-left corner: a plain frame's body starts 8 mm in and 2 mm down.
+\vbox to 0pt{\vskip-2mm\hbox to 0pt{\hskip-8mm\begin{tikzpicture}[x=1mm,y=1mm]
+  \useasboundingbox (0,0) rectangle (160,-90);
+  \titlepanel
+  \node[anchor=north west,inner sep=0pt] at (8,-8)
+    {\includegraphics[width=30mm,height=12mm,keepaspectratio]{\institutionlogo}};
+  % The text block grows upwards from the presenter's name, whose baseline stays 66.5 mm from the top, so
+  % a title of one, two or three lines keeps the name in place. The subtitle and the DOI under it form one
+  % block, and the accent rule sits halfway between that block and the name.
+  \node[anchor=south west,inner sep=0pt,text width=90mm,align=left,
+    execute at begin node={\hyphenpenalty=10000\exhyphenpenalty=10000}] at (8,-66.63) {%
+    {\fontsize{16.5}{18}\selectfont\bfseries\color{primary}\inserttitle\par}\vskip2mm
+    {\fontsize{12}{14.5}\selectfont\color{ink}\insertsubtitle\par}%
+    \ifdefempty{\paperdoi}{\vskip3.5mm}{\vskip0.6mm
+      {\fontsize{9}{11}\selectfont\slidelink{https://doi.org/\paperdoi}{https://doi.org/\paperdoi}\par}%
+      \vskip1.25mm}%
+    \textcolor{accent}{\rule{14mm}{0.8pt}}\par\vskip3mm
+    {\fontsize{11}{13}\selectfont\color{ink}\insertauthor\par}};
+  \node[anchor=south west,inner sep=0pt] (group) at (8,-83)
+    {\includegraphics[width=10mm,height=10mm,keepaspectratio]{\grouplogo}};
+  \node[anchor=west,inner sep=0pt,text width=74mm,align=left,font=\fontsize{7}{8.8}\selectfont,
+    execute at begin node={\hyphenpenalty=10000}] at ([xshift=3mm]group.east) {%
+    {\color{primary}\insertinstitute\par}
+    {\color{grey}\insertdate\par}};
+\end{tikzpicture}\hss}\vss}
+% a frame with no tall content drops out of the notes' thumbnail; this invisible strut keeps it
+\par\rule{0pt}{80mm}
+\note{\textbf{0:00--0:20}\par
+    One sentence on the paper or the topic: where it was published and what it does.\par
+    One sentence on why it matters to this audience.}
+\end{frame}
+
+% ------------------------------------------------------------------ outline
+\begin{frame}{Outline}
+  % each section's title as on its divider, and the divider's question
+  \small\renewcommand\arraystretch{1.4}\setlength\tabcolsep{4pt}
+  \begin{tabularx}{\textwidth}{@{}>{\leavevmode\color{primary}\bfseries}p{4mm}>{\bfseries}p{42mm}X@{}}
+    \toprule
+    1 & The problem & Why does the baseline lose detail?\\
+    2 & The method  & How does the method keep edges sharp?\\
+    3 & The results & Does it work?\\
+    \bottomrule
+  \end{tabularx}
+  \note{\textbf{0:20--0:50}\par
+    Three sections, each answering one question.\par
+    The failure case of section 1 returns at the end of section 3.}
+\end{frame}

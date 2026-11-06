@@ -1,0 +1,21 @@
+% ----------------------------------------------------------------- thank you
+% The title slide's layout: its panel on the right, the thanks where the title was; drawn inside the
+% frame, so that the notes' thumbnail shows it too.
+\begin{frame}[plain,noframenumbering]
+\vbox to 0pt{\vskip-2mm\hbox to 0pt{\hskip-8mm\begin{tikzpicture}[x=1mm,y=1mm]
+  \useasboundingbox (0,0) rectangle (160,-90);
+  \titlepanel
+  \node[anchor=north west,inner sep=0pt] at (8,-8)
+    {\includegraphics[width=30mm,height=12mm,keepaspectratio]{\institutionlogo}};
+  \node[anchor=north west,inner sep=0pt,text width=88mm,align=left] at (8,-36) {%
+    {\fontsize{32}{36}\selectfont\bfseries\color{primary}Thank you\par}\vskip4mm
+    \textcolor{accent}{\rule{14mm}{0.8pt}}\par\vskip3mm
+    {\fontsize{11}{13}\selectfont\color{ink}\insertauthor\par}};
+\end{tikzpicture}\hss}\vss}
+\par\rule{0pt}{80mm}
+\note{\textbf{8:10--8:30}\par
+    Thank you.\par
+    Questions to open the discussion: would the edge term help in our own work; how would we check it
+      on several runs; and what would make us trust a sharper output.\par
+    Backup slides follow: the loss in full and the references.}
+\end{frame}
