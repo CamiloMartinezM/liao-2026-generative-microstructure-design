@@ -1,33 +1,38 @@
-# Beamer talk template
+# Generative design of high-fidelity microstructures using physics-aware machine learning (Liao et al., 2026)
 
-A LaTeX Beamer template for research talks: 16:9 slides drawn on a millimetre grid, a citation in every footer, section dividers that each ask one question, and speaker notes with a time range per slide, built into a PDF of their own. An example talk of about eight minutes shows each part; replace its slides with yours.
+A LaTeX Beamer talk of about 24 minutes for the d3M group on W. Liao et al., "Generative design of high-fidelity microstructures using physics-aware machine learning", *Nature Communications* 17, 11232 (2026), [doi:10.1038/s41467-026-78118-3](https://doi.org/10.1038/s41467-026-78118-3). The talk tells the paper's own story:
 
-![Pages of the example talk](docs/preview.png)
+- the design problem: the strength–ductility trade-off of 25 Inconel 625 variants, and a pixel loss that blurs grain boundaries in EBSD maps;
+- the groundwork, for an audience that has not followed the machine-learning literature: three ways to generate an image (in one pass, token by token, step by step from noise), the variational autoencoder, what reconstructing, generating and extrapolating each need as a check, diffusion models and how they are trained, and Pareto fronts with NSGA-II;
+- the method: one EBSD map per alloy, split by alloy before cropping; a variational autoencoder refined by a conditional diffusion model; a loss with Sobel-edge and SSIM terms, and SSIM built up from luminance, contrast and structure; six numbers per alloy; gradient-boosted surrogates and an NSGA-II search;
+- the results as the authors report them: reconstruction fidelity, surrogate R², five candidates beyond the measured front, fine grains, crystal plasticity simulation and one experimental alloy.
 
-## Start a talk
+An appendix holds the loss terms in full, the 25 processing routes and the references.
 
-1. Click **Use this template** on GitHub, or copy this folder.
-2. Replace the two placeholder logos in `presentation/assets/`: `logo-institution` (title and closing slides) and `logo-group` (title slide and footer), as `.pdf`, `.png` or `.jpg`.
-3. Set the title, subtitle, presenter, institute and date in `presentation/main.tex`, and for a talk on a paper its DOI.
-4. Put your institution's colours into the RGB values at the top of `presentation/beamerthemetalk.sty`.
-5. Write the timed outline in `OUTLINE.md`, then replace the example slides in `presentation/slides/`.
-6. Build, check that every note fits, and look at every page.
+![Pages of the talk](docs/preview.png)
 
-[SLIDE-STYLE.md](SLIDE-STYLE.md) describes how the slides are meant to look and read: one message per slide, carried by a drawing, a figure or an example.
+## Start here
+
+- [Slides](presentation/build/main.pdf): 33 pages, 29 for the talk (title, outline, 22 content slides, four section dividers and the closing slide) and 4 appendix pages.
+- [Speaker notes](presentation/build/speaker-notes.pdf): 27 pages, one per slide except the dividers and the references, each with the slide, its notes and its time range; the closing slide's notes hold questions for the discussion, and the backup slides A1 and A2 have notes that start "If asked".
+- [Timed outline](OUTLINE.md), [sources and provenance](SOURCES.md), and [third-party notices](THIRD-PARTY-NOTICES.md).
 
 ## Files
 
 | Path | Content |
 |---|---|
-| `presentation/main.tex` | Entry point: title, subtitle, DOI, presenter, institute, date, the section files |
-| `presentation/beamerthemetalk.sty` | Theme: colours, fonts, headline, footer, frame titles, blocks, code and terminal windows, folder trees, section dividers |
-| `presentation/slides/macros.tex` | Drawing helpers: parts of figures, numbered explanations, strips, cards, labels |
-| `presentation/slides/*.tex` | One file per section; `00-title.tex` holds the title slide and the outline, `04-closing.tex` the closing slide, `05-appendix.tex` the appendix |
-| `presentation/speaker-notes.tex` | Builds the speaker notes from `main.tex` |
-| `presentation/assets/` | The two placeholder logos and the example figure |
-| `presentation/tools/` | `make_placeholders.py` draws the placeholders, `check_notes.py` checks the speaker notes, `contact_sheet.py` renders pages to one image |
-| `presentation/build.ps1`, `presentation/build.sh`, `presentation/.latexmkrc` | Builds: PowerShell, POSIX shell, latexmk |
-| `OUTLINE.md`, `SOURCES.md`, `THIRD-PARTY-NOTICES.md` | The timed outline, the sources of each slide, and the material by others with its licence; filled in for the example talk |
+| `presentation/main.tex` | Entry point: title, presenter, date, section files |
+| `presentation/beamerthemed3m.sty` | The d3M theme, the same file as in the Coding Agents 101 talk ([AI-Best-Practices](https://github.com/CamiloMartinezM/AI-Best-Practices)) |
+| `presentation/slides/macros.tex` | Drawing helpers: parts of the paper's figures, the strength–elongation plane, strips and cards |
+| `presentation/slides/*.tex` | One file per section; `00-title.tex` holds the title and outline, `02-groundwork.tex` the groundwork, `06-closing.tex` the thank-you slide, `07-appendix.tex` the appendix |
+| `presentation/assets/liao2026/` | Figures 1 to 5 of the paper as published, and `dataset.csv` from the paper's code repository |
+| `presentation/assets/drawn/` | Illustrative grain maps, synthetic tessellations coloured like EBSD Euler maps; the forward diffusion of one of them with its noise image; the same patch cut into tiles and written in reading order; and copies of it changed in brightness, contrast and arrangement for SSIM |
+| `presentation/assets/generated.tex` | Plot data: the 25 alloys and their front, the processing design, values read off the paper's figures, the table of A2, the toy fronts of the search slide, and the SSIM values of the SSIM slide |
+| `presentation/tools/make_assets.py` | Writes `assets/generated.tex` and the images in `assets/drawn/` |
+| `presentation/tools/check_notes.py`, `presentation/tools/contact_sheet.py` | Check that every speaker note fits its page; render pages to one image |
+| `presentation/assets/uds-logo.pdf`, `presentation/assets/d3m.png` | Logos |
+| `presentation/build.ps1`, `presentation/build.sh`, `presentation/.latexmkrc` | Builds: PowerShell, POSIX shell, latexmk (XeLaTeX, three passes) |
+| `docs/preview.png` | The pages shown above |
 
 ## Build
 
@@ -45,42 +50,34 @@ or in a POSIX shell:
 ./build.sh speaker-notes
 ```
 
-The slides go to `build/main.pdf` and the speaker notes to `build/speaker-notes.pdf`. Each build runs XeLaTeX three times, because the section dividers place their graphics relative to the page, and then lists the layout warnings: overfull boxes, missing characters and undefined references. `latexmk` works too, with the included `.latexmkrc`.
+`tools/make_assets.py` redraws the plot data and the grain maps; run it first after changing it or `dataset.csv`, with a Python that has numpy, scipy and Pillow:
 
-Requirements: XeLaTeX (tested with MiKTeX 25.12) with beamer, TikZ, tcolorbox, listings, fontawesome5, booktabs, tabularx and colortbl. Text is set in Latin Modern Sans, which ships with TeX. Code is set in [FiraCode Nerd Font Mono](https://www.nerdfonts.com/font-downloads) when it is installed, and in Latin Modern Mono otherwise. On Overleaf, upload the contents of `presentation/` as a project, without `.latexmkrc` and `build/`, and choose XeLaTeX as the compiler and `main.tex` as the main document.
+```powershell
+python -I tools/make_assets.py
+```
 
-The tools need Python 3 with PyMuPDF and Pillow: `pip install pymupdf pillow`.
+Requirements: XeLaTeX (tested with MiKTeX 25.12) with beamer, TikZ, tcolorbox, listings and fontawesome5, and FiraCode Nerd Font Mono for code, with Latin Modern Mono as the fallback. Three passes are needed because the title page and the section dividers place their graphics relative to the page. The current build has no layout warnings, and every speaker note fits its page. The check tools need Python 3 with PyMuPDF and Pillow.
 
 ## Editing
 
-- **Title, presenter, date:** `\title{}`, `\subtitle{}`, `\paperdoi`, `\author{}`, `\institute{}` and `\date{}` in `main.tex`, and the PDF's own title in `\hypersetup`. Break a long title at its phrases with `\\`; the title slide sets up to three lines at 16.5 pt. The title's text block is anchored at the presenter's name, so a longer title grows upwards and the name stays in place. For a talk on a paper, put the paper's citation into `\subtitle{}` and its DOI into `\paperdoi`: the title slide shows `https://doi.org/` and the DOI under the citation, as a link. Leave `\paperdoi` empty for no DOI line.
-- **Logos:** `\institutionlogo` and `\grouplogo` in the theme name the files, without extension.
-- **Colours:** the theme names its colours by meaning, and each keeps that meaning on every slide: `primary` for the subject (the method, the model, the tool) and for titles, `accent` for what to look at (a decision, a problem, a numbered marker), `ink` for body text and fixed inputs such as data, `good` for what works, and greys (`grey`, `greymid`, `greylight`, `greypale`) for secondary text, baselines and guides. Cards and panels use the tints `primarytint`, `accenttint`, `goodtint` and `inktint`. Every coloured element also has a text label.
-- **Sections:** `\section[short name]{title}` names the section in the headline, and `\sectionframe{01}{title}{guiding question}{\faSearch}` draws its divider with a fontawesome5 icon. The outline slide lists the sections with their questions.
-- **Slides:** draw each slide in a `tikzpicture[x=1mm,y=1mm]` that starts at y = 0 and stays within `\useasboundingbox (0,0) rectangle (144,-54)`. The theme starts every slide's content 4 mm below the title; add no `\vspace` at the start of a frame and use `[T]` columns.
-- **Citations:** a frame's `source={...}` fills its footer, and every footer uses one form. A work is cited by its authors, year and venue: "et al." for three or more authors, "and" for two; a journal by its abbreviation, volume and first page, a conference by its acronym, a preprint by its arXiv number, a book by its title in italics. The figure, equations or section used follow: a reproduced figure adds its licence, as in `Fig.\ 2c (CC BY 4.0)`, and a drawing made after a figure says `after Fig.\ 4f`. Works are joined by ` · `, and a footer of two lines breaks only between works. The full references go on the last appendix slides.
-- **Figures:** `\figpart{x}{y}{file}{image width}{x0}{y0}{x1}{y1}{width}` shows the pixel box (x0, y0)–(x1, y1) of an image that is `image width` pixels wide, scaled to `width` mm, with its top-left corner at (x, y). Afterwards `{\fpx{px}}` and `{\fpy{py}}` give the slide position of an image pixel, to place a marker or a label. Number what the audience should look at with `\node[number mark] at (x,y) {1};` and repeat the number in the explanation with `\markeditem{1}{text}`, or in running text with `\numbermark{1}`. A figure under a licence without adaptations (ND) stays unmodified: labels and markers go beside it.
-- **Strips and cards:** `\warnstrip{y}{text}` draws a red strip for a catch and `\goodstrip{y}{text}` a green one for what holds; `\cardhead{x}{y}{width}{colour}{label}` draws a card's head, the style `card text` sets its body, and `\cardbullet{text}` sets one line of it with the theme's bullet.
-- **Boxes:** `infoblock` (information), `warnblock` (decisions and warnings), `datablock` (files and data), `goodblock` (what works) and `panel` (untitled); `codefile` shows a file as in an editor, with its path in a tab (Markdown by default, `[style=sh]` for shell, YAML and TOML, `[style=py]` for Python); `terminal` shows commands in a terminal window, with green `$` prompts; `terminalwindow` frames a terminal screenshot; `foldertree` draws a folder structure with `\tdir{depth}{name}{note}` and `\tfile{depth}{name}{note}` rows. A frame with `codefile` or `terminal` needs the `fragile` option.
-- **Speaker notes:** `\note{\textbf{1:00--2:00}\par First point.\par Second point.}`: the time range first, then one sentence per line, so that a glance finds the next cue. A backup slide's note starts with `\textbf{If asked}` and adds no time. A slide that builds up in steps attaches its note to the last step, `\note<2>{...}`. A note that is too long is cut off without a warning; `tools/check_notes.py` finds it.
-- **Links:** `\slidelink{url}{text}` makes a link in the slides and the same text, without the link, in the speaker notes, whose thumbnails scale a slide but not its links.
-- **Title and closing slides:** both are drawn inside their frames, so that the speaker notes show them too. `\titlepanel` in `00-title.tex` draws the panel on their right: replace its drawing with the key figure of your talk, simplified.
-- **Appendix:** after `\appendix` the footer numbers slides A1, A2 and so on; give each appendix title the same number, as in `A1\enspace The loss in full`.
+- **Title, presenter and date:** `\title{}`, `\subtitle{}`, `\paperdoi`, `\author{}` and `\date{}` in `main.tex`, with the PDF's own title in `\hypersetup`. The title slide sets the paper's full title in three lines at 16.5 pt, broken at its phrases by `\\` in `\title{}`, and under the citation the DOI as a link to `https://doi.org/` followed by `\paperdoi`; the speaker notes show the same line without the link, because their thumbnails scale the slide but not its links. The text block is anchored at the presenter's name, which keeps the same distance from the d3M block as in the Coding Agents 101 talk, so a longer or shorter title grows or shrinks upwards.
+- **Footer:** `main.tex` replaces the theme's footer with the d3M logo, the frame's citation and the slide number alone.
+- **Citations:** a frame's `source=` key fills its footer, in one form on every slide. The paper is `Liao et al.\ (2026), Nat.\ Commun.\ 17, 11232`, followed by the figure, equations or section: a reproduced figure adds `(CC BY-NC-ND 4.0)`, and a drawing made after a figure says `after Fig.\ 4f`. Every other work is author, year and venue, with "et al." for three or more authors and "and" for two: a journal by its abbreviation, volume and first page, a conference by its acronym, a preprint by its arXiv number, a book by its title in italics. Works are joined by ` · `; the full references are on slides A3 and A4.
+- **The paper's figures:** `\figpart{x}{y}{figure}{x0}{y0}{x1}{y1}{width}` shows the pixel box (x0, y0)–(x1, y1) of `assets/liao2026/figure-0<figure>.jpg` at the given width in millimetres, with its top-left corner at (x, y). The figures are under CC BY-NC-ND 4.0, which allows parts of them but no adaptations: labels, braces and markers go beside a figure, never over it. After a `\figpart`, `\fpx{px}` and `\fpy{py}` give the slide position of an image pixel, as for the row labels on slides 3 and 16. A dense figure is explained beside it by its own panel letters, as on slides 19 and 22.
+- **The strength–elongation plane:** `\planeaxes{xmin}{xmax}{ymin}{ymax}{width}{height}{x ticks}{y ticks}` draws the axes; a scope with the style `plane` then takes (MPa, %) coordinates for `\drawalloys`, `\drawfront[front]` and `\drawcandidates`, as on slides 2 and 21 and in the title panel; slide 4 draws a small copy without ticks.
+- **Recurring drawings:** the generation loop of slide 10 returns in the cards of slide 18, the way back of slide 17 returns on slide 18, and the forward diffusion of slide 8 returns on slides 5 and 9; change them together.
+- **Values read off the paper's figures:** the five candidates of Fig. 4f and candidate 1 in Fig. 5h are set at the top of `tools/make_assets.py`; [SOURCES.md](SOURCES.md) says how they were read.
+- **Strips and cards:** `\warnstrip{y}{text}` draws a red strip for a catch and `\goodstrip{y}{text}` a green one for what holds; `\cardhead{x}{y}{width}{colour}{label}` draws a card's head.
+- **Glyphs:** `\descstrip{x}{y}{w}{h}` draws a descriptor of six numbers, `\codematrix{x}{y}{columns}{rows}{cell}` a grid of latent codes, `\minitree{x}{y}` a small regression tree, `\fixarrow{x0}{x1}{y}{label}` the broad arrows of slide 4, and `\cardbullet{text}` a line with the theme's square bullet, as on slide 22.
+- **Colours:** blue for the method and its parts, red for what to look at (candidates, a catch), dark for data, grey for the measured alloys and for baselines, green for what holds. Every coloured element also has a text label.
+- **Speaker notes:** `\note{\textbf{12:20--13:20}\par First point.\par Second point.}`, the time range first and then one sentence per line; a backup slide's note starts with `\textbf{If asked}` and adds no time. A note that is too long is cut off without a warning, so after every change run `python tools/check_notes.py`, which checks that each note's last words appear in `build/speaker-notes.pdf`.
+- **Spacing:** the theme starts every slide's content 4 mm below the title. A slide drawn as a `tikzpicture[x=1mm,y=1mm]` starts its first element at y = 0 and stays within `\useasboundingbox (0,0) rectangle (144,-54)`.
 
-## Checks
+## Before presenting
 
-After every change:
-
-1. Build both PDFs and fix every layout warning that the build lists.
-2. Run `python tools/check_notes.py`: every note's last words must appear in the speaker notes, and nothing may run into a notes page's bottom edge.
-3. Run `python tools/contact_sheet.py` and look at `build/contact-sheet.png` for spacing, overlaps, sizes and alignment.
-4. Compare the slide numbers in `OUTLINE.md` with the footers.
-
-`python tools/make_placeholders.py` draws the placeholder logos and the example figure again.
+- Check the occasion and date in `\date{}` of `main.tex`: the title slide reads "Research group talk, 05.11.2026".
+- The Supplementary Information of the paper, with the baseline comparison, the latent-space interpolation and the candidates' simulated stress–strain curves, is not covered; the notes say where a slide depends on it.
 
 ## Credits
 
-The theme's look follows two earlier designs, which `presentation/beamerthemetalk.sty` reimplements with its own colours, fonts and components:
-
-- [TU Delft presentation](https://www.overleaf.com/latex/templates/tu-delft-presentation/jcxrmnxssdst) by Novanext, an Overleaf template licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/): plain square blocks, the logo in the footer, and section dividers as a centred box over a band.
-- Beamer's Frankfurt theme, part of the [beamer](https://ctan.org/pkg/beamer) class (LaTeX Project Public License 1.3c, or GNU GPL 2 or later): the headline of section names with a dot per frame below each.
+The repository was created from [beamer-talk-template](https://github.com/CamiloMartinezM/beamer-talk-template), whose [slide style](https://github.com/CamiloMartinezM/beamer-talk-template/blob/main/SLIDE-STYLE.md) the slides follow. The theme's plain blocks, footer logo and section dividers follow the [TU Delft presentation](https://www.overleaf.com/latex/templates/tu-delft-presentation/jcxrmnxssdst) template by Novanext (CC BY 4.0), and its navigation Beamer's Frankfurt theme; [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) lists all material by others.

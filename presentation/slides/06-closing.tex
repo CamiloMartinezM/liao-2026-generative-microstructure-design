@@ -1,0 +1,21 @@
+% --------------------------------------------------------------- thank you
+% the thanks where the title slide has its title; drawn inside the frame, so that the notes' thumbnail
+% shows it too
+\begin{frame}[plain,noframenumbering]
+\vbox to 0pt{\vskip-2mm\hbox to 0pt{\hskip-8mm\begin{tikzpicture}[x=1mm,y=1mm]
+  \useasboundingbox (0,0) rectangle (160,-90);
+  \node[anchor=north west,inner sep=0pt] at (8,-8) {\includegraphics[width=30mm]{\udslogo}};
+  \node[anchor=north west,inner sep=0pt,text width=88mm,align=left] at (8,-36) {%
+    {\fontsize{32}{36}\selectfont\bfseries\color{udsblue}Thank you\par}\vskip4mm
+    \textcolor{udsred}{\rule{14mm}{0.8pt}}\par\vskip3mm
+    {\fontsize{11}{13}\selectfont\color{udsdark}\insertauthor\par}};
+\end{tikzpicture}\hss}\vss}
+\par\rule{0pt}{80mm}
+\note{\textbf{23:40--24:00}\par
+    Thank you.\par
+    Questions to open the discussion: would edge and SSIM terms help our segmentation of grain
+      boundaries; what minimum grain size do we use in EBSD analysis, and why; how many independent
+      specimens would we want before trusting a property model; and what would convince us that a
+      generated microstructure is new and can be made.\par
+    Backup slides follow: the loss terms in full, the 25 processing routes and the references.}
+\end{frame}

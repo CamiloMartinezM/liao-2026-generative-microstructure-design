@@ -1,29 +1,149 @@
-\section[Problem]{The problem}
-\sectionframe{01}{The problem}{Why does the baseline lose detail?}{\faSearch}
+\section[Problem]{The design problem}
+\sectionframe{01}{The design problem}{Why ask a generative model for new microstructures?}{\faBalanceScale}
 
-% -------------------------------------------------------------- failure case
-% One concrete failure case, shown large, with numbered markers that also number the explanation.
-\begin{frame}[source={Author et al.\ (2026), Journal 1, 1, Fig.\ 2a, b}]{Where the baseline fails}
+% ------------------------------------------------------------ the trade-off
+\begin{frame}[source={Liao et al.\ (2026), Nat.\ Commun.\ 17, 11232}]{Strength/ductility trade-off}
   \begin{tikzpicture}[x=1mm,y=1mm]
     \useasboundingbox (0,0) rectangle (144,-54);
-    % panels a and b of the example figure, 49 mm each
-    \figpart{0}{0}{assets/example-figure}{4000}{0}{0}{1000}{1000}{49}
-    \node[small label,anchor=north] at (24.5,-50.2) {input};
-    \figpart{54}{0}{assets/example-figure}{4000}{1000}{0}{2000}{1000}{49}
-    \node[small label,anchor=north] at (78.5,-50.2) {baseline output};
-    % markers on the output, beside the thin bar and above the shared edge of the two squares
-    \node[number mark] at ({\fpx{1300}},{\fpy{622}}) {1};
-    \node[number mark] at ({\fpx{1760}},{\fpy{398}}) {2};
-    % the explanation, numbered like the markers
-    \node[anchor=north west,label text,text width=36mm] at (108,-14)
-      {\markeditem{1}{thin bar fades}\markeditem{2}{colours mix along the edge}};
-    \node[anchor=north west,small label,text width=36mm] at (108,-34)
-      {the loss averages over all pixels; edges are few pixels};
+    \begin{scope}[shift={(16,-42)}]
+      \planeaxes{340}{1000}{28}{86}{124}{42}{400,500,...,1000}{30,40,...,80}
+      \begin{scope}[plane]
+        \drawfront[front]
+        \drawalloys
+        \draw[udsred,line width=1.1pt,-{Stealth[length=2.6mm,width=2mm]}] (640,55) -- (760,72);
+        \node[anchor=west,inner sep=0pt,font=\footnotesize\bfseries,text=udsred] at (768,73.5)
+          {goal: stronger and more ductile};
+        % the two ends of the trade-off, each beside the axis it is close to
+        \node[anchor=west,inner sep=0pt,font=\footnotesize\bfseries,text=udsdark] at (410,84) {ductile, but weak};
+        \node[anchor=east,inner sep=0pt,font=\footnotesize\bfseries,text=udsdark] at (1000,41) {strong, but brittle};
+        \node[anchor=west,label text] at (360,33) {25 alloys, one processing route each};
+        \node[anchor=west,small label] (fl) at (600,40) {measured front};
+        \draw[udsgreymid,line width=0.4pt] (fl.north east) -- (700.46,45);
+      \end{scope}
+    \end{scope}
+    \node[axis label] at (78,-49.4) {yield strength (MPa)};
+    \node[axis label,rotate=90] at (3,-21) {elongation (\%)};
   \end{tikzpicture}
-  \note{\textbf{1:00--2:00}\par
-    Left, an input image; right, the baseline's output for it.\par
-    The thin bar fades (marker 1), and the two squares bleed into each other along their shared edge
-      (marker 2).\par
-    The baseline is trained with a per-pixel loss, which averages over all pixels; edges are few pixels,
-      so missing them costs little.}
+  \note{\textbf{1:00--2:10}\par
+    Each point is one alloy: Inconel 625, a nickel-based superalloy used for turbine discs, blades and
+      combustors, processed in one of 25 ways.\par
+    The alloys differ only in processing: hot rolling and annealing at different temperatures and
+      times.\par
+    Each was tensile-tested for its yield strength and its elongation to failure.\par
+    The stronger variants stretch less: a strength--ductility trade-off; making a metal stronger
+      usually makes it brittle, and making it ductile makes it weak.\par
+    The dashed staircase is the front: no measured alloy beats a point on it in both properties.\par
+    The goal is a microstructure above and to the right of the front.\par
+    Such microstructures are usually found by experience and trial and error over processing
+      routes; the paper asks a generative model to propose them.}
+\end{frame}
+
+% ------------------------------------------------------- failure case
+\begin{frame}[source={Liao et al.\ (2026), Nat.\ Commun.\ 17, 11232, Fig.\ 2c (CC BY-NC-ND 4.0)}]
+  {Classic pixelwise loss fails}
+  \begin{tikzpicture}[x=1mm,y=1mm]
+    \useasboundingbox (0,0) rectangle (144,-54);
+    \figpart{32}{0}{2}{340}{770}{1897}{1268}{112}
+    \node[anchor=east,label text,align=right] at (29,{\fpy{884}}) {real patches};
+    \node[anchor=east,label text,align=right,text=udsred] (pl) at (29,{\fpy{1155}}) {pixel loss only};
+    % the two classic pixel losses over the n pixels of a patch x and its reconstruction
+    \node[anchor=north east,inner sep=0pt,font=\scriptsize,text=udsdark,align=right] at ([yshift=-1.6mm]pl.south east)
+      {MAE $=\frac{1}{n}\sum_i|x_i-\hat{x}_i|$\\[1.2mm] MSE $=\frac{1}{n}\sum_i(x_i-\hat{x}_i)^2$};
+    \warnstrip{-41.4}{blurred or missing grain boundaries, colours mixed inside grains}
+  \end{tikzpicture}
+  \note{\textbf{2:10--3:10}\par
+    These are real patches of 50 by 50 micrometres from test alloys, cut from EBSD maps.\par
+    In an EBSD map each pixel's colour encodes the crystal orientation there: the three Euler angles
+      as red, green and blue; the black lines are grain boundaries.\par
+    The second row is what the paper's generator returns when it is trained to reproduce its input
+      with a pixel loss alone, the mean absolute difference of the pixel values (MAE); the mean squared
+      difference (MSE) is the other classic choice, and both average over all pixels.\par
+    The boundaries blur, and colours mix inside grains, although a real grain has nearly one
+      orientation.\par
+    Boundaries cover few pixels, so an average over all pixels barely notices them; yet boundaries
+      and orientations are what set the mechanical properties.}
+\end{frame}
+
+% ------------------------------------------------------------- the idea
+\begin{frame}[source={Liao et al.\ (2026), Nat.\ Commun.\ 17, 11232, after Figs.\ 1 and 4f}]{Two fixes}
+  \begin{tikzpicture}[x=1mm,y=1mm]
+    \useasboundingbox (0,0) rectangle (144,-54);
+    \tikzset{verdict mark/.style={circle,text=white,inner sep=0pt,minimum size=3.8mm,font=\scriptsize},
+      head/.style={anchor=west,inner sep=0pt,font=\footnotesize\bfseries},
+      panel title/.style={anchor=north west,inner sep=0pt,font=\footnotesize\bfseries,text=udsdark},
+      note/.style={anchor=north west,label text,text width=22mm}}
+    % column heads: what goes wrong, and what the paper changes
+    \node[verdict mark,fill=udsred] (bad) at (1.9,-1.9) {\faTimes};
+    \node[head,text=udsred] at ([xshift=1.6mm]bad.east) {the obstacle};
+    \node[verdict mark,fill=testgreen] (good) at (87.9,-1.9) {\faCheck};
+    \node[head,text=testgreen] at ([xshift=1.6mm]good.east) {the paper's fix};
+    % row 1, the loss: the same patch region, three times enlarged, before and after
+    \fill[redtint] (0,-5.6) rectangle (58,-28.4);
+    \fill[greentint] (86,-5.6) rectangle (144,-28.4);
+    \node[panel title] at (2.4,-7.4) {$L=L_{\mathrm{pix}}$};
+    \node[panel title] at (88.4,-7.4) {$L=L_{\mathrm{pix}}+\textcolor{testgreen}{L_{\mathrm{edge}}+L_{\mathrm{SSIM}}}$};
+    \foreach \x/\img in {2.4/grain-map-blurred,88.4/grain-map} {
+      \node[anchor=north west,inner sep=0pt] at (\x,-12.6) {\includegraphics[width=14mm]{assets/drawn/\img}};
+      \draw[udsdark,line width=0.4pt] ({\x+4.9},-17.5) rectangle ++(4.2,-4.2);
+      \begin{scope}
+        \clip ({\x+24},-19.6) circle (6.3);
+        \node[anchor=north west,inner sep=0pt] at ({\x+3},1.4) {\includegraphics[width=42mm]{assets/drawn/\img}};
+      \end{scope}
+      \draw[udsdark,line width=0.5pt] ({\x+24},-19.6) circle (6.3);
+      \draw[udsdark,line width=0.3pt] ({\x+9.1},-17.5) -- ({\x+19.6},-15.1) ({\x+9.1},-21.7) -- ({\x+19.6},-24.1);}
+    \node[note] at (121.4,-13.4) {sharp boundaries, one colour per grain};
+    \fixarrow{60.4}{83.6}{-17}{more terms}
+    % row 2, the sampling: the latent space sampled at random, and searched toward targets (after Fig. 1c)
+    \fill[redtint] (0,-31.2) rectangle (58,-54);
+    \fill[greentint] (86,-31.2) rectangle (144,-54);
+    \node[panel title] at (2.4,-33) {random sampling};
+    \node[panel title] at (88.4,-33) {property-guided search};
+    \tikzset{code/.style={circle,fill=udsgreymid,inner sep=0pt,minimum size=1.3mm},
+      new code/.style={circle,fill=udsblue,inner sep=0pt,minimum size=1.5mm},
+      latent/.style={fill=white,draw=udsgreylight,line width=0.4pt}}
+    % left: codes drawn at random fall among the training codes
+    \filldraw[latent] (14,-43.6) ellipse (10 and 7);
+    \foreach \x/\y in {9.6/-38.6,7/-41.4,5.8/-43.8,8.4/-45,9.8/-48.4,14.6/-38.4,19.6/-39,18.6/-48.2,14.8/-49.2}
+      \node[code] at (\x,\y) {};
+    \node[anchor=north,small label] at (14,-51.2) {latent space};
+    % the three new codes join, and one arrow goes on to the sentence about them; the training codes
+    % leave each line a clear path
+    \node[note,text width=27mm,anchor=west] at (28.4,-43.6) {new codes fall among the training codes};
+    \foreach \x/\y in {12/-40.4,15.8/-43.6,11.2/-47}
+      \draw[udsblue,line width=0.5pt,shorten <=1mm] (\x,\y) to[out=0,in=180] (22.4,-43.6);
+    \draw[udsblue,line width=0.5pt,-{Stealth[length=1.5mm,width=1.1mm]}] (22.4,-43.6) -- (27.4,-43.6);
+    \foreach \x/\y in {12/-40.4,15.8/-43.6,11.2/-47} \node[new code] at (\x,\y) {};
+    % right: the search steers codes to targets outside them, beyond the measured front (after Fig. 1c)
+    \filldraw[latent] (97.6,-45) ellipse (8 and 5.8);
+    \foreach \x/\y in {-4.6/1.4,-2/-2.4,0.4/2.6,2.2/-0.6,4.6/1.6,-0.6/-4,5/-2.6,-5.4/-1.2}
+      \node[code] at (97.6+\x,-45+\y) {};
+    \draw[udsblue,line width=0.9pt,-{Stealth[length=1.8mm,width=1.4mm]}] (104.8,-42.6) -- (107.9,-41.4);
+    \filldraw[fill=udsblue!22,draw=udsblue,line width=0.4pt] (111.2,-40.6) circle (3.2);
+    \foreach \x/\y in {-1.2/0.9,1.2/-0.9} \node[text=udsred,font=\tiny] at (111.2+\x,-40.6+\y) {\faStar};
+    \node[anchor=north,small label] at (97.6,-51.2) {latent space};
+    \node[anchor=north,small label] at (111.2,-44.2) {targets};
+    \begin{scope}[shift={(119,-49.4)}]
+      \draw[udsgreymid,line width=0.5pt] (0,11.4) -- (0,0) -- (22,0);
+      \node[anchor=north,small label] at (11,-0.6) {strength};
+      \node[anchor=south,small label,rotate=90] at (-0.6,5.7) {elongation};
+      \begin{scope}[x=0.033333mm,y=0.203571mm,shift={(-340,-30)}]
+        \drawfront[front]
+        \drawalloys[minimum size=1mm]
+        \draw[udsred,line width=0.7pt,-{Stealth[length=1.6mm,width=1.2mm]}] (600,51) -- (660,61);
+        \drawcandidates[minimum size=1.3mm]
+      \end{scope}
+    \end{scope}
+    \fixarrow{60.4}{83.6}{-42.2}{steer by properties}
+  \end{tikzpicture}
+  \note{\textbf{3:10--4:10}\par
+    The paper answers two obstacles with two changes: the obstacles on the left, its fixes on the
+      right.\par
+    First, a pixel loss alone blurs grain boundaries, as the enlarged region shows; the paper adds two
+      terms, one that responds to grain boundaries and one to the structure inside grains.\par
+    Second, codes drawn at random from the model's latent space fall among the training codes, so the new
+      samples resemble the measured alloys.\par
+    So the authors search the latent space, steered by predicted strength and ductility, toward targets
+      outside the training codes, as their Fig.~1c sketches; their five candidates lie beyond the measured
+      front.\par
+    Section 2 explains the models and the search for anyone who has not met them.}
 \end{frame}

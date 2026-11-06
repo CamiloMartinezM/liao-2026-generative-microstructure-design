@@ -1,0 +1,50 @@
+% Written by tools/make_assets.py; edit the script, not this file.
+% The 25 measured alloys (assets/liao2026/dataset.csv): yield strength (MPa)/elongation (%)/ID.
+\def\alloydata{470.23/69.32/1,468.47/68.7/2,434.94/72.51/3,394.53/78.29/4,362.26/82.18/5,377.75/78.15/6,399.05/75.03/7,613.19/53.39/8,700.46/49.44/9,827.46/40.76/10,897.42/35.42/11,793.37/40.48/12,594.08/50.53/13,441.99/69.56/14,395.19/74.56/15,429.82/67.24/16,451.36/66.3/17,593.98/45.55/18,790.98/39.15/19,983.38/33.63/20,938.12/32.69/21,844.78/36.77/22,807.42/35.94/23,462.32/64.45/24,373.67/70.09/25}
+% Their front: \drawfront[options] draws its staircase in (MPa,%) coordinates.
+\newcommand\drawfront[1][]{\draw[#1] (362.26,82.18) -- (362.26,78.29) -- (394.53,78.29) -- (394.53,75.03) -- (399.05,75.03) -- (399.05,72.51) -- (434.94,72.51) -- (434.94,69.56) -- (441.99,69.56) -- (441.99,69.32) -- (470.23,69.32) -- (470.23,53.39) -- (613.19,53.39) -- (613.19,49.44) -- (700.46,49.44) -- (700.46,40.76) -- (827.46,40.76) -- (827.46,36.77) -- (844.78,36.77) -- (844.78,35.42) -- (897.42,35.42) -- (897.42,33.63) -- (983.38,33.63);}
+% The processing design: hot-rolling reduction (%)/annealing temperature (C)/annealing time (h)/yield strength (MPa)/shade of blue (%).
+\def\alloygrid{0/650/1/470/19,0/750/5/468/19,0/850/10/435/15,0/950/15/395/11,0/1050/20/362/8,20/1050/15/378/10,20/950/10/399/12,20/850/5/613/33,20/750/1/700/42,20/650/20/827/54,30/650/15/897/61,30/750/10/793/51,30/850/20/594/31,30/950/1/442/16,30/1050/5/395/11,40/1050/1/430/15,40/950/5/451/17,40/850/15/594/31,40/750/20/791/51,40/650/10/983/70,50/650/5/938/65,50/750/15/845/56,50/850/1/807/52,50/950/20/462/18,50/1050/10/374/9}
+% Read off the paper's figures: the five candidates of Fig. 4f, yield strength/elongation/label (0: none),
+% and candidate 1 in Fig. 5h as simulated and as measured on the processed alloy.
+\def\candidatedata{556/68.8/0,666/67.6/0,677/65.3/2,823/48.1/1,899/46.5/0}
+\def\predictedpoint{823,48.1}
+\def\simulatedpoint{808,44.5}
+\def\measuredpoint{825,43.5}
+% Euler colours of nearly equal orientations: phi1 = 2 and 358 degrees (Phi 30, phi2 45), and
+% phi2 = 1 and 89 degrees (phi1 120, Phi 30), which a 90-degree cubic symmetry relates.
+\definecolor{wrapA}{RGB}{1,85,128}
+\definecolor{wrapB}{RGB}{254,85,128}
+\definecolor{symA}{RGB}{85,85,3}
+\definecolor{symB}{RGB}{85,85,252}
+% The 25 processing routes, rows 1-13 and 14-25: ID & C & h & % & MPa & %.
+\def\alloytableA{1 & 650 & 1 & 0 & 470 & 69.3\\2 & 750 & 5 & 0 & 468 & 68.7\\3 & 850 & 10 & 0 & 435 & 72.5\\4 & 950 & 15 & 0 & 395 & 78.3\\5 & 1050 & 20 & 0 & 362 & 82.2\\6 & 1050 & 15 & 20 & 378 & 78.2\\7 & 950 & 10 & 20 & 399 & 75.0\\8 & 850 & 5 & 20 & 613 & 53.4\\9 & 750 & 1 & 20 & 700 & 49.4\\10 & 650 & 20 & 20 & 827 & 40.8\\11 & 650 & 15 & 30 & 897 & 35.4\\12 & 750 & 10 & 30 & 793 & 40.5\\13 & 850 & 20 & 30 & 594 & 50.5\\}
+\def\alloytableB{14 & 950 & 1 & 30 & 442 & 69.6\\15 & 1050 & 5 & 30 & 395 & 74.6\\16 & 1050 & 1 & 40 & 430 & 67.2\\17 & 950 & 5 & 40 & 451 & 66.3\\18 & 850 & 15 & 40 & 594 & 45.5\\19 & 750 & 20 & 40 & 791 & 39.1\\20 & 650 & 10 & 40 & 983 & 33.6\\21 & 650 & 5 & 50 & 938 & 32.7\\22 & 750 & 15 & 50 & 845 & 36.8\\23 & 850 & 1 & 50 & 807 & 35.9\\24 & 950 & 20 & 50 & 462 & 64.5\\25 & 1050 & 10 & 50 & 374 & 70.1\\}
+% Non-dominated sorting of a toy trade-off (pareto_toy): points x/y/rank in the unit square, both
+% objectives maximised; staircases of fronts 1 and 2; the crowding box of the middle point of front 1.
+\def\paretopoints{0.133/0.950/1,0.334/0.396/4,0.186/0.692/3,0.633/0.420/2,0.891/0.189/1,0.113/0.884/2,0.634/0.566/1,0.207/0.612/3,0.754/0.333/2,0.628/0.398/3,0.856/0.055/2,0.800/0.146/2,0.778/0.393/1,0.525/0.900/1,0.555/0.482/2,0.386/0.788/2}
+\newcommand\drawfrontone[1][]{\draw[#1] (0.133,0.950) -- (0.133,0.900) -- (0.525,0.900) -- (0.525,0.566) -- (0.634,0.566) -- (0.634,0.393) -- (0.778,0.393) -- (0.778,0.189) -- (0.891,0.189);}
+\newcommand\drawfronttwo[1][]{\draw[#1] (0.113,0.884) -- (0.113,0.788) -- (0.386,0.788) -- (0.386,0.482) -- (0.555,0.482) -- (0.555,0.420) -- (0.633,0.420) -- (0.633,0.333) -- (0.754,0.333) -- (0.754,0.146) -- (0.800,0.146) -- (0.800,0.055) -- (0.856,0.055);}
+\newcommand\drawcrowdbox[1][]{\draw[#1] (0.525,0.393) rectangle (0.778,0.900);}
+% SSIM of the illustrative patch against changed copies (ssim_examples): \ssim<copy><L, C, S, Q for
+% their product, M for the mean absolute difference>, over the whole patch on grey values
+\newcommand\ssimBrightL{0.89}
+\newcommand\ssimBrightC{1.00}
+\newcommand\ssimBrightS{1.00}
+\newcommand\ssimBrightQ{0.89}
+\newcommand\ssimBrightM{0.24}
+\newcommand\ssimFlatL{1.00}
+\newcommand\ssimFlatC{0.70}
+\newcommand\ssimFlatS{1.00}
+\newcommand\ssimFlatQ{0.70}
+\newcommand\ssimFlatM{0.08}
+\newcommand\ssimShuffledL{1.00}
+\newcommand\ssimShuffledC{1.00}
+\newcommand\ssimShuffledS{0.02}
+\newcommand\ssimShuffledQ{0.02}
+\newcommand\ssimShuffledM{0.20}
+\newcommand\ssimBlurredL{1.00}
+\newcommand\ssimBlurredC{0.97}
+\newcommand\ssimBlurredS{0.86}
+\newcommand\ssimBlurredQ{0.84}
+\newcommand\ssimBlurredM{0.05}

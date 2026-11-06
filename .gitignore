@@ -1,7 +1,10 @@
-# XeLaTeX intermediates; the two PDFs stay, so the example opens without a build
+# XeLaTeX intermediates; the two PDFs stay, so the slides open without a build
 presentation/build/*
 !presentation/build/main.pdf
 !presentation/build/speaker-notes.pdf
+
+# sections and backup slides left out of the talk
+left-out/
 
 # latexmk and editor leftovers
 *.fdb_latexmk

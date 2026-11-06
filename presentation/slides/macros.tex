@@ -1,68 +1,128 @@
-% Drawing helpers of this talk, loaded after the theme. Each slide is drawn in a
-% tikzpicture[x=1mm,y=1mm] that starts at y = 0 and stays within \useasboundingbox (0,0) rectangle
-% (144,-54), the slide area below the title: 144 mm wide, 54 mm tall, y downwards negative.
+% Drawing helpers of this talk, loaded after the theme.
 \usetikzlibrary{decorations.pathreplacing}% braces
 
-% ------------------------------------------------------------------ parts of figures
-% \figpart{x}{y}{file}{image width}{x0}{y0}{x1}{y1}{width}: the pixel box (x0,y0)--(x1,y1) of an image
-% <image width> pixels wide, origin at its top-left corner, scaled to <width> mm, with its top-left corner
-% at (x,y). Afterwards (fp nw) and (fp se) are its corners, and {\fpx{px}} and {\fpy{py}} give the slide
-% position of an image pixel, to place a marker or a label: \node at ({\fpx{420}},{\fpy{310}}) {...};
-% A figure whose licence allows no adaptations (ND) stays unmodified: labels and marks go beside it.
-% The numbers may be expressions, such as \k*49+2 in a \foreach.
-\newcommand\figpart[9]{%
-  \pgfmathsetmacro\fpX{#1}\pgfmathsetmacro\fpY{#2}%
-  \pgfmathsetmacro\fpXo{#5}\pgfmathsetmacro\fpYo{#6}%
-  \pgfmathsetmacro\fpscale{(#9)/((#7)-(#5))}%
-  \pgfmathsetmacro\fpfull{(#4)*\fpscale}%
-  \pgfmathsetmacro\fpheight{((#8)-(#6))*\fpscale}%
-  \pgfmathsetmacro\fpwidth{#9}%
-  \coordinate (fp nw) at (\fpX,\fpY);
-  \coordinate (fp se) at ({\fpX+\fpwidth},{\fpY-\fpheight});
+% Plot data: the 25 measured alloys, their front, the processing design, values read off the paper's figures,
+% and the Euler colours of the colour slide; written by tools/make_assets.py.
+\input{assets/generated}
+
+% ---------------------------------------------------------------- the paper's figures
+% The figures of Liao et al. (2026) as published (CC BY-NC-ND 4.0). A slide shows a part of one figure,
+% unmodified, and draws its own labels and marks beside it, never over it.
+% \figpart{x}{y}{figure}{x0}{y0}{x1}{y1}{width}: in a tikzpicture[x=1mm,y=1mm], the pixel box (x0,y0)--(x1,y1)
+% of figure-0<figure>.jpg (2000 pixels wide, origin at its top-left corner), scaled to <width> mm, with its
+% top-left corner at (x,y). Afterwards (fp nw) and (fp se) are its corners, and \fpx{px} and \fpy{py} give
+% the slide position (mm) of an image pixel, to place a label beside a panel.
+\newcommand\figpart[8]{%
+  \pgfmathsetmacro\fpscale{#8/(#6-#4)}%
+  \pgfmathsetmacro\fpfull{2000*\fpscale}%
+  \pgfmathsetmacro\fpheight{(#7-#5)*\fpscale}%
+  \def\fpX{#1}\def\fpY{#2}\def\fpXo{#4}\def\fpYo{#5}%
+  \coordinate (fp nw) at (#1,#2);
+  \coordinate (fp se) at ({#1+#8},{#2-\fpheight});
   \begin{scope}
     \clip (fp nw) rectangle (fp se);
-    \node[anchor=north west,inner sep=0pt] at ({\fpX-\fpXo*\fpscale},{\fpY+\fpYo*\fpscale})
-      {\includegraphics[width=\fpfull mm]{#3}};
+    \node[anchor=north west,inner sep=0pt] at ({#1-#4*\fpscale},{#2+#5*\fpscale})
+      {\includegraphics[width=\fpfull mm]{assets/liao2026/figure-0#3.jpg}};
   \end{scope}}
-\newcommand\fpx[1]{(\fpX+((#1)-\fpXo)*\fpscale)}
-\newcommand\fpy[1]{(\fpY-((#1)-\fpYo)*\fpscale)}
+\newcommand\fpx[1]{(\fpX+(#1-\fpXo)*\fpscale)}
+\newcommand\fpy[1]{(\fpY-(#1-\fpYo)*\fpscale)}
 
-% ---------------------------------------------------------------------------- strips
-% A strip across the slide area with its top at y (mm): red with a warning sign for a catch, green with
-% a check mark for what holds.
+% ------------------------------------------------------------------ the property plane
+% Yield strength against elongation, drawn alike wherever it returns: the measured alloys as grey dots,
+% their front as a grey dashed staircase, generated candidates as red squares.
+% \planeaxes{xmin}{xmax}{ymin}{ymax}{width}{height}{x ticks}{y ticks} draws the axes of a plot <width> by
+% <height> mm whose corner (xmin,ymin) is the current origin; a scope with the style plane then takes
+% (MPa,%) coordinates.
+\tikzset{
+  alloy/.style={circle,fill=udsgreymid,inner sep=0pt,minimum size=1.7mm},
+  candidate/.style={rectangle,fill=udsred,inner sep=0pt,minimum size=1.9mm},
+  tick label/.style={font=\scriptsize,text=udsgrey,inner sep=0pt},
+  axis label/.style={font=\footnotesize,text=udsdark,inner sep=0pt},
+  front/.style={udsgreymid,line width=0.6pt,dash pattern=on 1.6pt off 1.2pt},
+}
+\newcommand\planeaxes[8]{%
+  \pgfmathsetmacro\plsx{#5/(#2-#1)}\pgfmathsetmacro\plsy{#6/(#4-#3)}%
+  \tikzset{plane/.estyle={x=\plsx mm,y=\plsy mm,shift={(-#1,-#3)}}}%
+  \draw[udsgreymid,line width=0.5pt] (0,#6) -- (0,0) -- (#5,0);
+  \begin{scope}[plane]
+    \foreach \t in {#7} {
+      \draw[udsgreymid,line width=0.5pt] (\t,#3) -- ++(0pt,-1mm);
+      \node[tick label,anchor=north] at ([yshift=-1.7mm]\t,#3) {\t};}
+    \foreach \t in {#8} {
+      \draw[udsgreymid,line width=0.5pt] (#1,\t) -- ++(-1mm,0pt);
+      \node[tick label,anchor=east] at ([xshift=-1.7mm]#1,\t) {\t};}
+  \end{scope}}
+% inside a scope with the style plane
+\newcommand\drawalloys[1][]{\foreach \s/\e/\i in \alloydata {\node[alloy,#1] at (\s,\e) {};}}
+% candidate k is the node (cand k) for the labelled candidates 1 and 2
+\newcommand\drawcandidates[1][]{%
+  \foreach \s/\e/\l in \candidatedata {\node[candidate,#1] (cand\l) at (\s,\e) {};}}
+% a candidate's label, ① or ②, beside its square
+% (its digit on the baseline of the text around it; anchor=base also overrides the anchor that a
+% nested picture inherits from the node it is set in)
+\newcommand\candlabel[1]{\tikz[baseline=(cl.base)]\node[anchor=base,circle,draw=udsred,line width=0.5pt,
+  text=udsred,font=\fontsize{6.5}{7}\selectfont\bfseries,inner sep=0pt,minimum size=3.1mm] (cl) {#1};}
+
+% ------------------------------------------------------------------------ strips
+% A strip across the text width with its top at y (mm): red with a warning sign for a catch, green with a
+% check mark for what holds.
 \newcommand\warnstrip[2]{%
-  \fill[accenttint] (0,#1) rectangle (144,#1-5.6);
-  \fill[accent] (0,#1) rectangle (1.2,#1-5.6);
-  \node[anchor=west,inner sep=0pt,font=\footnotesize,text=ink] at (3.6,#1-2.8)
-    {\textcolor{accent}{\faExclamationTriangle}\enspace #2};}
+  \fill[redtint] (0,#1) rectangle (144,#1-5.6);
+  \fill[udsred] (0,#1) rectangle (1.2,#1-5.6);
+  \node[anchor=west,inner sep=0pt,font=\footnotesize,text=udsdark] at (3.6,#1-2.8)
+    {\textcolor{udsred}{\faExclamationTriangle}\enspace #2};}
 \newcommand\goodstrip[2]{%
-  \fill[goodtint] (0,#1) rectangle (144,#1-5.6);
-  \fill[good] (0,#1) rectangle (1.2,#1-5.6);
-  \node[anchor=west,inner sep=0pt,font=\footnotesize,text=ink] at (3.6,#1-2.8)
-    {\textcolor{good}{\faCheck}\enspace #2};}
+  \fill[greentint] (0,#1) rectangle (144,#1-5.6);
+  \fill[testgreen] (0,#1) rectangle (1.2,#1-5.6);
+  \node[anchor=west,inner sep=0pt,font=\footnotesize,text=udsdark] at (3.6,#1-2.8)
+    {\textcolor{testgreen}{\faCheck}\enspace #2};}
 
-% ----------------------------------------------------------------------------- cards
+% ------------------------------------------------------------------------- cards
 % \cardhead{x}{y}{width}{colour}{text}: a card's head, 5.4 mm tall, with its label on one baseline
 \tikzset{card head/.style={anchor=north west,inner xsep=1.6mm,inner ysep=0pt,minimum height=5.4mm,
   text height=1.9mm,text depth=0.6mm,font=\footnotesize\bfseries,text=white,align=left}}
 \newcommand\cardhead[5]{\pgfmathsetmacro\chw{#3-3.2}%
   \node[card head,fill=#4,minimum width=#3mm,text width=\chw mm] at (#1,#2) {#5};}
 % lines of a card body, 7 or 8 pt, ragged right without hyphenation
-\tikzset{card text/.style={anchor=north west,inner sep=0pt,font=\footnotesize,text=ink,align=left,
+\tikzset{card text/.style={anchor=north west,inner sep=0pt,font=\footnotesize,text=udsdark,align=left,
   execute at begin node={\hyphenpenalty=10000\raggedright}}}
 % \cardbullet{text}: one line of a card with the theme's square bullet and a hanging indent
 \newcommand\cardbullet[1]{\par\hangindent=3.4mm\hangafter=1\noindent
-  \makebox[3.4mm][l]{\textcolor{primary}{\rule[0.3ex]{1.05mm}{1.05mm}}}#1\par\vspace{0.8mm}}
+  \makebox[3.4mm][l]{\textcolor{udsblue}{\rule[0.3ex]{1.05mm}{1.05mm}}}#1\par\vspace{0.8mm}}
 
-% \markeditem{k}{text}: a line of the explanation beside an image, numbered like the image's marker k
-% (\node[number mark] at (x,y) {k};), with a hanging indent
-\newcommand\markeditem[2]{\par\hangindent=5.6mm\hangafter=1\noindent
-  \makebox[5.6mm][l]{\numbermark{#1}}#2\par\vspace{2.4mm}}
-
-% ---------------------------------------------------------------------------- labels
+% ------------------------------------------------------------------------ labels
 \tikzset{
-  label text/.style={inner sep=0pt,font=\footnotesize,text=ink,align=left,
+  label text/.style={inner sep=0pt,font=\footnotesize,text=udsdark,align=left,
     execute at begin node={\hyphenpenalty=10000\raggedright}},
-  small label/.style={inner sep=0pt,font=\scriptsize,text=grey,align=left,
+  small label/.style={inner sep=0pt,font=\scriptsize,text=udsgrey,align=left,
     execute at begin node={\hyphenpenalty=10000\raggedright}},
+  icon frame/.style={draw=udsdark,line width=0.4pt},
 }
+
+% ------------------------------------------------------------------ glyphs
+% \fixarrow{x0}{x1}{y}{label}: a broad dark arrow from (x0,y) to (x1,y), its label above it
+\newcommand\fixarrow[4]{%
+  \fill[udsdark] (#1,#3+1.5) -- (#2-3.4,#3+1.5) -- (#2-3.4,#3+3.4) -- (#2,#3) -- (#2-3.4,#3-3.4)
+    -- (#2-3.4,#3-1.5) -- (#1,#3-1.5) -- cycle;
+  \node[anchor=south,small label,text=udsdark,align=center,text width=24mm] at ({(#1+#2)/2},#3+4.4) {#4};}
+% \descstrip{x}{y}{w}{h}: a descriptor of six numbers as six cells, the three of the mean blue and the three
+% of the spread dark; (x,y) is the top-left corner, w the width of a cell, h its height
+\newcommand\descstrip[4]{%
+  \foreach \dsj in {0,...,5} {%
+    \ifnum\dsj<3\def\dscf{udsblue!28}\def\dscl{udsblue}\else\def\dscf{udsdark!20}\def\dscl{udsdark}\fi
+    \filldraw[fill=\dscf,draw=\dscl,line width=0.3pt] ({#1+#3*\dsj},#2) rectangle ++(#3,-#4);}}
+% \codematrix{x}{y}{columns}{rows}{cell}: latent codes as a grid of blue cells of random shade, top-left at
+% (x,y); a fixed seed keeps the picture the same in every build
+\newcommand\codematrix[5]{%
+  \pgfmathsetseed{625}%
+  \foreach \cmr in {1,...,#4} \foreach \cmc in {1,...,#3} {%
+    \pgfmathtruncatemacro\cmshade{15+55*rnd}%
+    \fill[udsblue!\cmshade] ({#1+(\cmc-1)*#5},{#2-(\cmr-1)*#5}) rectangle ++(#5,-#5);}
+  \draw[udsblue,line width=0.5pt] (#1,#2) rectangle ({#1+#3*#5},{#2-#4*#5});}
+% \minitree{x}{y}: a regression tree of depth 2, its root at (x,y), 7 mm wide and 6 mm tall
+\newcommand\minitree[2]{%
+  \draw[udsgreymid,line width=0.4pt] (#1,#2) -- (#1-2,#2-2.8) (#1,#2) -- (#1+2,#2-2.8)
+    (#1-2,#2-2.8) -- (#1-3,#2-5.4) (#1-2,#2-2.8) -- (#1-1,#2-5.4)
+    (#1+2,#2-2.8) -- (#1+1,#2-5.4) (#1+2,#2-2.8) -- (#1+3,#2-5.4);
+  \foreach \mtx/\mty in {0/0,-2/-2.8,2/-2.8} \filldraw[fill=bluetint,draw=udsblue,line width=0.4pt] (#1+\mtx,#2+\mty) circle (0.75);
+  \foreach \mtx in {-3,-1,1,3} \filldraw[fill=white,draw=udsgreymid,line width=0.4pt] (#1+\mtx-0.55,#2-4.85) rectangle ++(1.1,-1.1);}

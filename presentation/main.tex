@@ -1,41 +1,67 @@
 % !TeX program = xelatex
-% A research talk: title, presenter, date and the section files.
+% Generative design of high-fidelity microstructures: a talk on Liao et al., Nat. Commun. 17, 11232 (2026)
 % Build: see ../README.md (XeLaTeX, three passes).
 \documentclass[aspectratio=169,10pt,t,compress,usepdftitle=false]{beamer}% pdftitle and pdfauthor below
-\usetheme{talk}
+\usetheme{d3m}
 
-% The title, broken at its phrases by \\ where it needs more than one line; the title slide sets up to
-% three lines at 16.5 pt. The short title in brackets is not shown.
-\title[Sharper reconstructions]{Sharper reconstructions\\ with an edge-aware loss}
-% For a talk on a paper, the paper's citation; otherwise a subtitle.
-\subtitle{Author et al., Journal 1, 1 (2026)}
-% For a talk on a paper, its DOI, shown under the subtitle as a link to https://doi.org/<DOI>; leave it
-% empty, \newcommand\paperdoi{}, for no DOI line. 10.1000/182 is the DOI Handbook, a stand-in.
-\newcommand\paperdoi{10.1000/182}
-\author{Your Name}% presenter, shown on the title slide under the subtitle
-\institute{\textbf{Group name}\\ Department\\ Institution}
-\date{Occasion, DD.MM.YYYY}
+% the paper's full title, broken at its phrases for the title slide's three lines
+\title[d3M]{Generative design of\\ high-fidelity microstructures using\\ physics-aware machine learning}
+\subtitle{Liao et al., Nat.\ Commun.\ 17, 11232 (2026)}
+% the paper's DOI, shown under the subtitle on the title slide as a link to https://doi.org/<DOI>
+\newcommand\paperdoi{10.1038/s41467-026-78118-3}
+\author{Camilo Martínez}% presenter, shown on the title slide under the subtitle
+\institute{\textbf{d3M -- Data-Driven Design of Materials}\\
+  Chair of Experimental Methods in Materials Science\\ Universität des Saarlandes}
+\date{Research group talk, 05.11.2026}
 
-\hypersetup{pdftitle={Sharper reconstructions with an edge-aware loss},
-  pdfsubject={One sentence on what the talk is about},
-  pdfauthor={Your Name},colorlinks=true,linkcolor=primary,urlcolor=primary}
+\hypersetup{pdftitle={Generative design of high-fidelity microstructures using physics-aware machine learning
+    (Liao et al., 2026)},
+  pdfsubject={A VAE and a diffusion model trained on EBSD maps of 25 Inconel 625 alloys, a property-guided
+    latent search, and how far the evidence carries},
+  pdfauthor={Camilo Martínez},colorlinks=true,linkcolor=udsblue,urlcolor=udsblue}
 
-% The audience PDF hides the notes; speaker-notes.tex sets \notesmode before \input{main}.
+% The theme's footer with the d3M logo in place of the university's, and the frame number alone
+% bottom right. The logo stays within the footer's 6 mm, so the slide area keeps its height.
+\makeatletter
+% The footer's citation keeps each work, between the separators " · " of the frame's source, on one line,
+% so that it breaks only between works.
+\def\dtm@endmark{\dtm@endmark}
+\def\dtm@works#1{\let\dtm@sep\@empty\dtm@work#1 · \dtm@endmark{} · }
+\def\dtm@work#1 · {\ifx\dtm@endmark#1\else
+  \dtm@sep\mbox{#1}\def\dtm@sep{\nobreakspace·\space}\expandafter\dtm@work\fi}
+\setbeamertemplate{footline}{%
+  \vbox to 9mm{\vfill
+    \hbox to\paperwidth{\hskip8mm
+      $\vcenter{\hbox{\includegraphics[height=5.8mm]{assets/d3m.png}}}$\hskip4mm
+      \ifx\dtm@framesource\@empty\else
+        \parbox[c]{108mm}{\fontsize{5.8}{6.8}\selectfont\color{udsgrey}\raggedright
+          \expandafter\dtm@works\expandafter{\dtm@framesource}}%
+      \fi\hfill
+      \ifbeamer@noframenumbering\else
+        $\vcenter{\hbox{\usebeamerfont{footline}\color{udsblue}\bfseries\insertframenumber}}$%
+      \fi
+      \hskip8mm}%
+    \vskip3mm}%
+}
+\makeatother
+
+% Audience PDF hides notes; speaker-notes.tex sets \notesmode before \input{main}.
 \providecommand\notesmode{hide notes}
 \setbeameroption{\notesmode}
 
-% Drawing helpers of this talk: parts of figures, strips, cards and labels.
+% Plot data, crops of the paper's figures, the property plane and other drawing helpers.
 \input{slides/macros}
 
 \begin{document}
 \input{slides/00-title}
 \input{slides/01-problem}
-\input{slides/02-method}
-\input{slides/03-results}
-\input{slides/04-closing}
+\input{slides/02-groundwork}
+\input{slides/03-method}
+\input{slides/04-results}
+\input{slides/06-closing}
 \appendix
 % the footer numbers appendix slides A1, A2, ..., as their titles do
 \setcounter{framenumber}{0}
 \renewcommand\insertframenumber{A\arabic{framenumber}}
-\input{slides/05-appendix}
+\input{slides/07-appendix}
 \end{document}

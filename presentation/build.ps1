@@ -1,5 +1,6 @@
 # Build the slides with XeLaTeX into build/.
-# Three passes: the TikZ overlays (section dividers) use page positions recorded in the previous pass.
+# Three passes: the TikZ overlays (title page, section dividers) use page
+# positions recorded in the previous pass.
 #   .\build.ps1                 audience PDF  (build\main.pdf)
 #   .\build.ps1 speaker-notes   notes PDF     (build\speaker-notes.pdf)
 param([string]$Target = 'main')

@@ -1,0 +1,128 @@
+% Appendix: its own sections, so the mini-frame headline shows only these.
+\section[Backup]{Backup}
+
+% ------------------------------------------------------------ loss terms
+\begin{frame}[source={Liao et al.\ (2026), Nat.\ Commun.\ 17, 11232, Eqs.\ 2--15}]{A1\enspace The loss terms in full}
+  \begin{columns}[T,onlytextwidth]
+    \begin{column}{0.48\textwidth}
+      \small
+      {\scriptsize\color{udsgrey}Sobel kernels and edge term (Eqs.\ 2, 3)}
+      \[ S_x=\left[\begin{array}{rrr}-1&0&1\\-2&0&2\\-1&0&1\end{array}\right],\;\;
+         S_y=\left[\begin{array}{rrr}-1&-2&-1\\0&0&0\\1&2&1\end{array}\right] \]
+      \[ L_{\mathrm{edge}}=\mathrm{mean}\big(|S_x\ast x-S_x\ast\hat{x}|+|S_y\ast x-S_y\ast\hat{x}|\big) \]
+      {\scriptsize\color{udsgrey}structural similarity (Eqs.\ 8, 9)}
+      \[ \mathrm{SSIM}(x,\hat{x})=\frac{(2\mu_x\mu_{\hat{x}}+C_1)(2\sigma_{x\hat{x}}+C_2)}
+         {(\mu_x^2+\mu_{\hat{x}}^2+C_1)(\sigma_x^2+\sigma_{\hat{x}}^2+C_2)} \]
+      \[ L_{\mathrm{SSIM}}=1-\mathrm{SSIM}(x,\hat{x}) \]
+    \end{column}
+    \begin{column}{0.48\textwidth}
+      \small
+      {\scriptsize\color{udsgrey}VAE, with $x_V$ the reconstruction of $x$ (Eq.\ 11)}
+      \[ L_{\mathrm{VAE}}=L_{\mathrm{pix}}+L_{\mathrm{edge}}+L_{\mathrm{SSIM}}+L_{\mathrm{KL}}\big(q(z|x),p(z)\big) \]
+      {\scriptsize\color{udsgrey}diffusion: forward process (Eq.\ 13)}
+      \[ q(x_t|x)=\mathcal{N}\big(x_t;\sqrt{\bar{\alpha}_t}\,x,(1-\bar{\alpha}_t)\mathbf{I}\big) \]
+      {\scriptsize\color{udsgrey}diffusion: loss on the predicted noise $\epsilon_\theta(x_t,t,x_V)$ (Eq.\ 15)}
+      \[ L_{\mathrm{DDPM}}=L_{\mathrm{pix}}(\epsilon_\theta,\tilde{\epsilon})+L_{\mathrm{SSIM}}(\epsilon_\theta,\tilde{\epsilon})
+         +L_{\mathrm{edge}}(\epsilon_\theta,\tilde{\epsilon}) \]
+    \end{column}
+  \end{columns}
+  \note{\textbf{If asked}\par
+    The pixel, edge and SSIM terms are added without weights, in the VAE and in the diffusion model.\par
+    In the diffusion model they compare the predicted with the true noise, so their link to grain
+      boundaries is indirect.\par
+    Eq.\ 14 as printed gives the predicted noise as the mean of the reverse step; standard DDPM sampling
+      derives that mean from the predicted noise.\par
+    SSIM uses its three factors (luminance, contrast, structure) with equal exponents of one, which
+      gives Eq.\ 8; $C_1$ and $C_2$ are small constants.}
+\end{frame}
+
+% ----------------------------------------------------------------- the data
+\begin{frame}[source={Liao et al.\ (2026), Nat.\ Commun.\ 17, 11232}]{A2\enspace The 25 processing routes}
+  \scriptsize\renewcommand\arraystretch{1.08}\setlength\tabcolsep{6pt}
+  \def\alloyhead{\toprule
+      & \multicolumn{2}{c}{annealing} & rolling & \multicolumn{2}{c}{measured}\\
+    ID & °C & h & \% & MPa & \%\\
+    \midrule}
+  \hfill
+  \begin{tabular}[t]{@{}rrrrrr@{}}
+    \alloyhead
+    \alloytableA
+    \bottomrule
+  \end{tabular}\hfill\hfill
+  \begin{tabular}[t]{@{}rrrrrr@{}}
+    \alloyhead
+    \alloytableB
+    \bottomrule
+  \end{tabular}\hfill\null
+  \note{\textbf{If asked}\par
+    The table of the code repository: each variant's processing route, hot rolling at 900 °C and then
+      annealing, with its measured yield strength and elongation.\par
+    Every pair of levels occurs once: an orthogonal design.\par
+    Alloy 10 is the measured alloy closest in strength to candidate 1.\par
+    The paper's 20/5 split is random and not listed; from Fig.\ 4b, the test alloys lie near 375, 445,
+      470, 795 and 845 MPa.}
+\end{frame}
+
+\section[References]{References}
+
+\begin{frame}{A3\enspace References}
+  \begin{columns}[T,onlytextwidth]
+  \begin{column}{0.53\textwidth}
+  \scriptsize\setlength\parskip{0.6mm}\raggedright
+  \textbf{The paper and its code}\par
+  W.~Liao, K.~Li, B.~Tang, J.~Fan, J.~Wang, X.~Xue, J.~Li, R.~Yuan (2026). \emph{Generative design of high-fidelity
+  microstructures using physics-aware machine learning}. Nature Communications 17, 11232.
+  \url{https://doi.org/10.1038/s41467-026-78118-3}, CC~BY-NC-ND~4.0.\par
+  W.~Liao, R.~Yuan (2026). \emph{microstructures\_design}, code, trained models and \fn{dataset.csv}, commit 25f6017,
+  MIT licence, read 4~Nov~2026.\\ \url{https://github.com/nwpuai4msegroup/microstructures_design};\\ archived at
+  \url{https://doi.org/10.5281/zenodo.21897025}.\par
+  \textbf{Materials background}\par
+  E.~Ma, T.~Zhu (2017). \emph{Towards strength--ductility synergy through the design of heterogeneous nanostructures
+  in metals}. Materials Today 20(6), 323--331.\par
+  \end{column}
+  \begin{column}{0.43\textwidth}
+  \scriptsize\setlength\parskip{0.4mm}\raggedright
+  \textbf{Generative models}\par
+  D.~P.~Kingma, M.~Welling (2013). \emph{Auto-encoding variational Bayes}. arXiv:1312.6114; ICLR 2014.\par
+  I.~Goodfellow et al.\ (2014). \emph{Generative adversarial nets}. NeurIPS~27.\par
+  J.~Sohl-Dickstein, E.~Weiss, N.~Maheswaranathan, S.~Ganguli (2015). \emph{Deep unsupervised learning using
+  nonequilibrium thermodynamics}. ICML 2015, PMLR 37, 2256--2265.\par
+  J.~Ho, A.~Jain, P.~Abbeel (2020). \emph{Denoising diffusion probabilistic models}. NeurIPS~33.\par
+  A.~Ramesh et al.\ (2021). \emph{Zero-shot text-to-image generation}. ICML 2021, PMLR 139, 8821--8831.\par
+  R.~Rombach, A.~Blattmann, D.~Lorenz, P.~Esser, B.~Ommer (2022). \emph{High-resolution image synthesis with latent
+  diffusion models}. CVPR 2022, 10684--10695.\par
+  K.~Pandey, A.~Mukherjee, P.~Rai, A.~Kumar (2022). \emph{DiffuseVAE: efficient, controllable and high-fidelity
+  generation from low-dimensional latents}. Transactions on Machine Learning Research.\par
+  \end{column}
+  \end{columns}
+\end{frame}
+
+\begin{frame}{A4\enspace References}
+  \begin{columns}[T,onlytextwidth]
+  \begin{column}{0.48\textwidth}
+  \scriptsize\setlength\parskip{0.6mm}\raggedright
+  \textbf{Image processing}\par
+  I.~Sobel, G.~Feldman (1968). \emph{A 3\,×\,3 isotropic gradient operator for image processing}. Talk at the Stanford
+  Artificial Intelligence Project.\par
+  Z.~Wang, A.~C.~Bovik, H.~R.~Sheikh, E.~P.~Simoncelli (2004). \emph{Image quality assessment: from error visibility
+  to structural similarity}. IEEE Transactions on Image Processing 13(4), 600--612.\par
+  O.~Ronneberger, P.~Fischer, T.~Brox (2015). \emph{U-Net: convolutional networks for biomedical image
+  segmentation}. MICCAI 2015, 234--241.\par
+  \textbf{Optimization}\par
+  V.~Pareto (1906). \emph{Manuale di economia politica}. Società Editrice Libraria, Milan.\par
+  J.~H.~Holland (1975). \emph{Adaptation in Natural and Artificial Systems}. University of Michigan Press.\par
+  K.~Deb, A.~Pratap, S.~Agarwal, T.~Meyarivan (2002). \emph{A fast and elitist multiobjective genetic algorithm:
+  NSGA-II}. IEEE Transactions on Evolutionary Computation 6(2), 182--197.\par
+  \end{column}
+  \begin{column}{0.48\textwidth}
+  \scriptsize\setlength\parskip{0.6mm}\raggedright
+  \textbf{Statistics}\par
+  K.~Pearson (1901). \emph{On lines and planes of closest fit to systems of points in space}. Philosophical
+  Magazine 2(11), 559--572.\par
+  L.~Breiman, J.~H.~Friedman, R.~A.~Olshen, C.~J.~Stone (1984). \emph{Classification and Regression Trees}.
+  Wadsworth.\par
+  J.~H.~Friedman (2001). \emph{Greedy function approximation: a gradient boosting machine}. Annals of Statistics
+  29(5), 1189--1232.\par
+  \end{column}
+  \end{columns}
+\end{frame}
